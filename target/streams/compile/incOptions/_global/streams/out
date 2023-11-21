@@ -1,0 +1,76 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = C:\Users\telmo\OneDrive\Desktop\APIGenMPST\target\scala-3.3.1\classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = C:\Users\telmo\OneDrive\Desktop\APIGenMPST\target\scala-3.3.1\classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Message$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$TypeSequence$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Parallel$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$End$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$ID.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Parallel$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxC$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Sequence.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Message.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$TP.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Parallel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Parallel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Choice$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Message$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Sequence$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Sequence.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxC.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Choice.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Global.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Sequence$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Choice$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$TP$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Type.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Global.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Message.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Identifier.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$TypeSequence.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$End$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Choice.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$ID$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Message$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$TypeSequence$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Parallel$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$End$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$ID.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Parallel$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxC$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Sequence.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Message.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$TP.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Parallel.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Parallel.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Choice$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Message$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Sequence$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Sequence.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxC.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Choice.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Global.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Sequence$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Choice$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$TP$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Type.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$Global.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Message.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Identifier.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$TypeSequence.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$End$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$Choice.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Syntax.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SyntaxB$ID$.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: C:\Users\telmo\OneDrive\Desktop\APIGenMPST\target\scala-3.3.1\classes.bak[0m
