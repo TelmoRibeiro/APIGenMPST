@@ -2,11 +2,16 @@
 ___
 
 ### In order to run:
-**JVM and SBT must be installed**
-
+**JVM and SBT must be installed**  
+  
+In **/APIGenMPST** run:
+````bash
+sbt clean
+sbt compile
+sbt run
+````
 ___
 
 ### Current Problems:
-- **need to fix operator precedence:**  
-**Parallel** > **Sequence** in order so inputA (current) behaves as inputB (expected)
-- **End needs to be mandatory at a chain's tail**
+- **"end" needs to be mandatory at a chain's tail**
+- **clean GlobalType**
