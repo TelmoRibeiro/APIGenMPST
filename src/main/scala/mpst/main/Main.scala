@@ -1,6 +1,6 @@
 package mpst.main
 
-import mpst.tests.ParsingTests
+import mpst.tests.Tests
 
 object Main extends App:
-  ParsingTests()
+  Tests()
