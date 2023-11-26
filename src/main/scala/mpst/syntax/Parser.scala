@@ -75,5 +75,9 @@ object Parser extends RegexParsers:
     }
   end message
 
-  def apply(input: String): ParseResult[GlobalType] = parseAll(globalType, input)
+  def apply(input: String): GlobalType =
+    parseAll(globalType, input) match
+      case Success(global, _)    => clean(global)
+      case NoSuccess(message, _) => throw new RuntimeException(s"Parsing Failed!\n MSG: $message")
+
 end Parser

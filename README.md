@@ -14,4 +14,3 @@ ___
 
 ### Current Problems:
 - **"end" needs to be mandatory at a chain's tail**
-- **clean GlobalType**
