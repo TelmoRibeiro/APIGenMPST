@@ -8,7 +8,7 @@ object Tests:
   /*  To Do:
       1) Extend the List
       2) Make "" functional
-   */
+  */
   private val protocolList: List[String] = List(
     "m>wA:Work ; m>wB:Work ; (wA>m:Done ; end || wB>m:Done ; end)",
     "m>wA:Work ; m>wB:Work ; rec X ; ((wA>m:Done ; end || wB>m:Done ; end) ; X)",

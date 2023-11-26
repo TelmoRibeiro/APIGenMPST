@@ -2,7 +2,10 @@ package mpst.projection
 
 import scala.annotation.tailrec
 
-// this is looking extremely cumbersome, there must be a way to simplify this //
+/*  To Do:
+    1) clean up imports
+    2) check if clean is enough to assure correct translation
+*/
 import mpst.syntax.GlobalType
 import mpst.syntax.LocalType
 import mpst.syntax.GlobalType.*
