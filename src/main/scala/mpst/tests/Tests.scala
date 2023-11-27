@@ -9,9 +9,9 @@ object Tests:
       2) Make "" functional
   */
   private val protocolList: List[String] = List(
-    "m>wA:Work ; m>wB:Work ; (wA>m:Done ; end || wB>m:Done ; end)",
-    "m>wA:Work ; m>wB:Work ; rec X ; ((wA>m:Done ; end || wB>m:Done ; end) ; X)",
-    "rec X ; ((m>wA:Work ; m>wB:Work ; (wA>wB:Work ; wB>wA:Done ; (wA>m:Done ; end || wB>m:Done ; end) + wA>wB:None ; (wA>m:Done ; end || wB>m:Done ; end))); X)"
+    "m>wA:Work ; m>wB:Work ; (wA>m:Done ; end || wB>m:Done ; end)",                                                                                                 // simple master:workers example
+    "m>wA:Work ; m>wB:Work ; rec X ; ((wA>m:Done ; end || wB>m:Done ; end) ; Y)",                                                                                   // bad recursion example
+    "rec X ; ((m>wA:Work ; m>wB:Work ; (wA>wB:Work ; wB>wA:Done ; (wA>m:Done ; end || wB>m:Done ; end) + wA>wB:None ; (wA>m:Done ; end || wB>m:Done ; end))); X)"   // good recursion example
   )
 
   def apply(): Unit =
