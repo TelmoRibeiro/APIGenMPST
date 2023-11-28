@@ -22,6 +22,7 @@ object Parser extends RegexParsers:
     "+" ~ maybeParallel ~ opt(choice) ^^ {
       case "+" ~ maybeParallelSyntax ~ Some(choiceSyntax) => (globalSyntax: GlobalType) => choiceSyntax(Choice(globalSyntax, maybeParallelSyntax))
       case "+" ~ maybeParallelSyntax ~ None               => (globalSyntax: GlobalType) => Choice(globalSyntax, maybeParallelSyntax)
+      case _ ~ _ ~ _                                      => throw new RuntimeException("BAD SYNTAX")
     }
   end choice
 
@@ -36,6 +37,7 @@ object Parser extends RegexParsers:
     "||" ~ maybeSequence ~ opt(parallel) ^^ {
       case "||" ~ maybeSequenceSyntax ~ Some(parallelSyntax) => (globalSyntax: GlobalType) => parallelSyntax(Parallel(globalSyntax, maybeSequenceSyntax))
       case "||" ~ maybeSequenceSyntax ~ None                 => (globalSyntax: GlobalType) => Parallel(globalSyntax, maybeSequenceSyntax)
+      case _ ~ _ ~ _                                         => throw new RuntimeException("BAD SYNTAX")
     }
   end parallel
 
@@ -50,6 +52,7 @@ object Parser extends RegexParsers:
     ";" ~ atomGlobalType ~ opt(sequence) ^^ {
       case ";" ~ atomGlobalTypeSyntax ~ Some(sequenceSyntax) => (globalSyntax: GlobalType) => sequenceSyntax(Sequence(globalSyntax, atomGlobalTypeSyntax))
       case ";" ~ atomGlobalTypeSyntax ~ None                 => (globalSyntax: GlobalType) => Sequence(globalSyntax, atomGlobalTypeSyntax)
+      case _ ~ _ ~ _                                         => throw new RuntimeException("BAD SYNTAX")
     }
   end sequence
   
@@ -58,6 +61,7 @@ object Parser extends RegexParsers:
   private def recursionFixedPoint: Parser[GlobalType] =
     "rec" ~ identifier ~ ";" ~ globalType ^^ {
       case "rec" ~ recursionVariableID ~ ";" ~ globalSyntax => RecursionFixedPoint(recursionVariableID, globalSyntax)
+      case _ ~ _ ~ _ ~ _                                    => throw new RuntimeException("BAD SYNTAX")
     }
   end recursionFixedPoint
   
@@ -77,7 +81,7 @@ object Parser extends RegexParsers:
 
   def apply(input: String): GlobalType =
     parseAll(globalType, input) match
-      case Success(global, _)    => clean(global)
-      case NoSuccess(message, _) => throw new RuntimeException(s"Parsing Failed!\n MSG: $message")
-
+      case Success(global, _)    => GlobalType(global)
+      case _                     => throw new RuntimeException(s"PARSING FAILED!\n")
+  end apply
 end Parser

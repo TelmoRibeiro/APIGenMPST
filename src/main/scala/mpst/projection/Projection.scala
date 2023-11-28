@@ -1,13 +1,9 @@
 package mpst.projection
 
-/*  To Do:
-    1) clean up imports
-    2) check if clean is enough to assure correct translation
-*/
 import mpst.syntax.GlobalType
 import mpst.syntax.LocalType
-import mpst.syntax.GlobalType.*
-import mpst.syntax.LocalType.*
+import mpst.syntax.GlobalType._
+import mpst.syntax.LocalType._
 
 object Projection:
   private def roles(global: GlobalType): Set[String] =
@@ -35,5 +31,5 @@ object Projection:
       case Choice  (globalA, globalB)            => LocalChoice  (projection(globalA, role), projection(globalB, role))
   end projection
 
-  def apply(global: GlobalType): Set[LocalType] = for role <- roles(global) yield LocalType.clean(projection(global, role))
+  def apply(global: GlobalType): Set[LocalType] = for role <- roles(global) yield LocalType(projection(global, role))
 end Projection
