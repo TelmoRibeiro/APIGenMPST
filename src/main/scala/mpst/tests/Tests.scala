@@ -7,8 +7,9 @@ import mpst.analysis.WellFormedness
 object Tests:
   private val protocolList: List[String] = List(
     "m>wA:Work ; m>wB:Work ; (wA>m:Done ; end || wB>m:Done ; end)",                                                                                                 // master-workers example
-    "m>wA:Work ; m>wB:Work ; rec X ; ((wA>m:Done ; end || wB>m:Done ; end) ; Y)",                                                                                   // ill  formed recursion
-    "rec X ; ((m>wA:Work ; m>wB:Work ; (wA>wB:Work ; wB>wA:Done ; (wA>m:Done ; end || wB>m:Done ; end) + wA>wB:None ; (wA>m:Done ; end || wB>m:Done ; end))); X)"   // well formed recursion
+    "m>wA:Work ; m>wB:Work ; rec X ; ((wA>m:Done ; end || wB>m:Done ; end) ; Y)",                                                                                   // ill formed: fixed point = X    | call = Y
+    "m>wA:Work ; m>wB:Work ; ((wA>m:Done ; end || wB>m:Done ; end) ; X)",                                                                                           // ill formed: fixed point = None | call = X
+    "rec X ; ((m>wA:Work ; m>wB:Work ; (wA>wB:Work ; wB>wA:Done ; (wA>m:Done ; end || wB>m:Done ; end) + wA>wB:None ; (wA>m:Done ; end || wB>m:Done ; end))); X)"   // well formed recursion example
   )
 
   def apply(): Unit =

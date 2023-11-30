@@ -15,7 +15,6 @@ enum LocalType:
 end LocalType
 
 object LocalType:
-  /*  TO ASK: Why isn't associative || needed? */
   private def cleanOnce(local: LocalType): LocalType =
     local match
       // associate ";", "||" and "+"
