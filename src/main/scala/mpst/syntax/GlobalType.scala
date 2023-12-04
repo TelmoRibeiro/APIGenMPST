@@ -2,20 +2,22 @@ package mpst.syntax
 
 import scala.annotation.tailrec
 
-// GLOBAL TYPE'S GRAMMAR
 enum GlobalType:
-  case Interaction(actorA: String, actorB: String, message: String) // actorA > actorB: message
-  case End extends GlobalType                                       // end
-  case RecursionFixedPoint(variable: String, global: GlobalType)    // μX ; G
-  case RecursionCall(variable: String) extends GlobalType           // X
-  case Sequence(globalA: GlobalType, globalB: GlobalType)           // GA ;  GB
-  case Parallel(globalA: GlobalType, globalB: GlobalType)           // GA || GB
-  case Choice  (globalA: GlobalType, globalB: GlobalType)           // GA +  GB
+  case Interaction(actorA: String, actorB: String, message: String) extends GlobalType // actorA > actorB: message
+  case End                                                          extends GlobalType // end
+  case RecursionFixedPoint(variable: String, global: GlobalType)    extends GlobalType // μX ; G
+  case RecursionCall(variable: String)                              extends GlobalType // X
+  case Sequence(globalA: GlobalType, globalB: GlobalType)           extends GlobalType // GA ;  GB
+  case Parallel(globalA: GlobalType, globalB: GlobalType)           extends GlobalType // GA || GB
+  case Choice  (globalA: GlobalType, globalB: GlobalType)           extends GlobalType // GA +  GB
+  case Send   (actorA: String, actorB: String, message: String)     extends GlobalType // actorA,actorB!message
+  case Receive(actorA: String, actorB: String, message: String)     extends GlobalType // actorA,actorB?message
 end GlobalType
 
+// GLOBAL TYPE'S GRAMMAR
 object GlobalType:
   private def cleanOnce(global: GlobalType): GlobalType =
-    global match
+    global match 
       // associate ";", "||" and "+"
       case Sequence(Sequence(globalA, globalB), globalC) => cleanOnce(Sequence(globalA, Sequence(globalB, globalC)))
       case Parallel(Parallel(globalA, globalB), globalC) => cleanOnce(Parallel(globalA, Parallel(globalB, globalC)))
@@ -35,6 +37,8 @@ object GlobalType:
       case End                            => End
       case Interaction(idA, idB, message) => Interaction(idA, idB, message)
       case RecursionCall(variable)        => RecursionCall(variable)
+      case Send   (idA, idB, message)     => Send   (idA, idB, message)
+      case Receive(idA, idB, message)     => Receive(idA, idB, message)
   end cleanOnce
 
   @tailrec

@@ -1,9 +1,7 @@
 package mpst.projection
 
 import mpst.syntax.GlobalType
-import mpst.syntax.LocalType
 import mpst.syntax.GlobalType._
-import mpst.syntax.LocalType._
 
 object Projection:
   private def roles(global: GlobalType): Set[String] =
@@ -15,21 +13,23 @@ object Projection:
       case Sequence(globalA, globalB)     => roles(globalA) ++ roles(globalB)
       case Parallel(globalA, globalB)     => roles(globalA) ++ roles(globalB)
       case Choice  (globalA, globalB)     => roles(globalA) ++ roles(globalB)
+      case _                              => throw new RuntimeException("Expected: GlobalType\nFound: LocalType")
   end roles
 
-  private def projection(global: GlobalType, role: String): LocalType =
+  private def projection(global: GlobalType, role: String): GlobalType =
     global match
-      case Interaction(idA, idB, message)        =>
-       if       role == idA then LocalSend   (idA, idB, message)
-       else if  role == idB then LocalReceive(idB, idA, message)
-       else     LocalEnd
-      case End                                   => LocalEnd
-      case RecursionFixedPoint(variable, global) => LocalRecursionFixedPoint(variable, projection(global, role))
-      case RecursionCall(variable)               => LocalRecursionCall(variable)
-      case Sequence(globalA, globalB)            => LocalSequence(projection(globalA, role), projection(globalB, role))
-      case Parallel(globalA, globalB)            => LocalParallel(projection(globalA, role), projection(globalB, role))
-      case Choice  (globalA, globalB)            => LocalChoice  (projection(globalA, role), projection(globalB, role))
+      case Interaction(idA, idB, message) =>
+       if       role == idA then Send    (idA, idB, message)
+       else if  role == idB then Receive (idB, idA, message)
+       else     End
+      case End => End
+      case RecursionFixedPoint(variable, global) => RecursionFixedPoint(variable, projection(global, role))
+      case RecursionCall(variable)               => RecursionCall(variable)
+      case Sequence(globalA, globalB)            => Sequence(projection(globalA, role), projection(globalB, role))
+      case Parallel(globalA, globalB)            => Parallel(projection(globalA, role), projection(globalB, role))
+      case Choice  (globalA, globalB)            => Choice  (projection(globalA, role), projection(globalB, role))
+      case _                                     => throw new RuntimeException("Expected GlobalType\nFound: LocalType")
   end projection
 
-  def apply(global: GlobalType): Set[LocalType] = for role <- roles(global) yield LocalType(projection(global, role))
+  def apply(global: GlobalType): Set[GlobalType] = for role <- roles(global) yield GlobalType(projection(global, role))
 end Projection
