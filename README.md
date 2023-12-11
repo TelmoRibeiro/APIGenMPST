@@ -13,11 +13,12 @@ sbt run
 ___
 
 ### To Do:
-1) prove **LocalEnd & Clean** are enough to assure a **valid** projection
-2) develop show (pretty print)
-3) extend example's list
-4) make empty string a valid protocol
-5) tail recursion
+1) Linearity
+2) Bad Syntax: End
+3) prove **NoAction & Clean** are enough to assure a **valid projections**
+4) develop show (pretty print)
+5) extend example's list
+6) try tail recursion most functions
 
 ___
 
@@ -30,3 +31,8 @@ ___
 > example: C>A:Login(x: string){tt}  
 
 ___ 
+
+### Questions:
+- should projectability confirm that the head interaction is not the same or that no common interaction appears on both branches (current implementation)
+- should I have a functions that refuses protocols with non-reachable states
+- should we allow this kind of reuse but bind the variable in to the scope? 2

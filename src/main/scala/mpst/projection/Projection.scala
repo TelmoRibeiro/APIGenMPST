@@ -21,7 +21,7 @@ object Projection:
       case Interaction(idA, idB, message) =>
        if       role == idA then Send    (idA, idB, message)
        else if  role == idB then Receive (idB, idA, message)
-       else     End
+       else     NoAction
       case End => End
       case RecursionFixedPoint(variable, global) => RecursionFixedPoint(variable, projection(global, role))
       case RecursionCall(variable)               => RecursionCall(variable)
