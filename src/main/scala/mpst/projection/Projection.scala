@@ -6,7 +6,7 @@ import mpst.syntax.GlobalType._
 object Projection:
   private def roles(global: GlobalType): Set[String] =
     global match
-      case Interaction(idA, idB, _)       => List(idA, idB).toSet
+      case Interaction(idA, idB, _)       => (Set() + idA) + idB
       case End                            => Set()
       case RecursionFixedPoint(_, global) => roles(global)
       case RecursionCall(_)               => Set()
