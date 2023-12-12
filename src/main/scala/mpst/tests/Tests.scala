@@ -2,7 +2,7 @@ package mpst.tests
 
 import mpst.syntax.Parser
 import mpst.projection.Projection
-import mpst.wellformedness.{FreeVariables, Projectability}
+import mpst.wellformedness.{FreeVariables, Projectability, Linearity}
 
 object Tests:
   private val protocolList: List[String] = List(
@@ -19,14 +19,17 @@ object Tests:
     "rec X ; (m>wA:Work || m>wB:Work) ; X ; end",               // well formed
     "(rec X ; m>wA:Work ; X) || (rec Y ; m>wB:Work ; Y) ; end", // well formed
 
-    // Recursion Testing //
-    "rec X ; (m>wA:Work ; m>wB:Work) ; end",                    // ill formed: fixed point variable not used      - Accepting
-    "rec X ; (m>wA:Work ; (rec X ; m>wB:Work ; X) ; X) ; end",  // ill formed: bad fixed point variable reuse (2) - Accepting
-    "rec X ; ((m>wA:Work ; X) + m>wB:Work) ; end",              // well formed:                                   - Accepting but bad cleanup
+    // Recursion Testing // - Not Developed Yet
+    "rec X ; (m>wA:Work ; m>wB:Work) ; end",                    // ill formed: fixed point variable not used
+    "rec X ; (m>wA:Work ; (rec X ; m>wB:Work ; X) ; X) ; end",  // ill formed: bad fixed point variable reuse (2)
+    "rec X ; ((m>wA:Work ; X) + m>wB:Work) ; end",              // well formed
 
     // Projectability Testing //
     "(broker>buyer:Notify ; buyer>seller:Msg ; seller>buyer:Pay + broker>buyer:Quit ; buyer>seller:Msg) ; end",     // ill  formed: buyer>seller:Msg in both branches
     "(broker>buyer:Notify ; buyer>seller:Price ; seller>buyer:Pay + broker>buyer:Quit ; buyer>seller:Stop) ; end",  // well formed
+
+    // Linearity Testing //
+    "m>wA:Work ; m>wB:Work ; (wA>m:Done ; wB>m:None || wA>m:None ; wB>m:None) ; end"
 
     // TO DO: ill formed: no end in bad position //
   )
@@ -37,7 +40,7 @@ object Tests:
       val global = Parser(protocol)
       println(s"GLOBAL TYPE: $global")
       for local <- Projection(global) yield
-        if   FreeVariables(local) && Projectability(local)
+        if   FreeVariables(local) && Projectability(local) && Linearity(local)
         then println(s"LOCAL TYPE: $local")
         else println(s"LOCAL TYPE: NOT WELL FORMED!")
       println()
