@@ -1,10 +1,10 @@
 package mpst.wellformedness
 
-import mpst.syntax.GlobalType
-import mpst.syntax.GlobalType._
+import mpst.syntax.Protocol
+import mpst.syntax.Protocol._
 
 object FreeVariables:
-  private def freeVariables(variables: Set[String], local: GlobalType): Boolean =
+  private def freeVariables(variables: Set[String], local: Protocol): Boolean =
     local match
       // terminal cases //
       case Send   (_, _, _) => true
@@ -19,9 +19,9 @@ object FreeVariables:
           case _                       => freeVariables(variables, localA) && freeVariables(variables, localB)
       case Parallel(localA, localB) => freeVariables(Set(), localA) && freeVariables(Set(), localB)                       // preventing parallel race conditions
       case Choice  (localA, localB) => freeVariables(variables, localA) && freeVariables(variables, localB)
-      // unexpected case //
+      // unexpected cases //
       case _ => throw new RuntimeException("Expected: LocalType\nFound: GlobalType")
   end freeVariables
 
-  def apply(local: GlobalType): Boolean = freeVariables(Set(), local)
+  def apply(local: Protocol): Boolean = freeVariables(Set(), local)
 end FreeVariables
