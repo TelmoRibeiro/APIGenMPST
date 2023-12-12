@@ -45,6 +45,18 @@ object Tests:
     "m>wA:Work ; m>wB:Work ; (wA>m:Done ; wB>m:None || wA>m:None ; wB>m:None) ; end",
   )
 
+  // End Position Testing //
+  private val EPList: List[String] = List (
+    // Expected Output: rejected - "End;something" //
+    "m>wA:Work ; End ; m>wB:Work ; end",
+  )
+
+  // Self Communication Testing //
+  private val SCList: List[String] = List (
+    // Expected Output: rejected - no self communication //
+    "m>wA:Work ; wA>wA:Done ; end"
+  )
+
   // Recursion Testing // NOT DEVELOPED YET
   private val RList: List[String] = List(
     // Expected Output: rejected - fixed point variable unused //
@@ -83,5 +95,11 @@ object Tests:
     println()
     println("LINEARITY TESTING")
     test(LList)
+    println("END POSITION TESTING")
+    test(EPList)
+    println()
+    println("SELF COMMUNICATION TESTING")
+    test(SCList)
+    println()
   end apply
 end Tests
