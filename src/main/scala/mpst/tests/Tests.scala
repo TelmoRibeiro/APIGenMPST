@@ -1,8 +1,8 @@
 package mpst.tests
 
-import mpst.syntax.Parser
+import mpst.syntax.{Protocol, Parser}
 import mpst.projection.Projection
-import mpst.wellformedness.{FreeVariables, Projectability, Linearity}
+import mpst.wellformedness.WellFormedness
 
 object Tests:
   // Standard Testing //
@@ -58,13 +58,13 @@ object Tests:
   private def test(protocolList: List[String]): Unit =
     for protocol <- protocolList yield
       println(s"INPUT: $protocol")
-      val global = Parser(protocol)
+      val global: Protocol = Parser(protocol)
       println(s"GLOBAL TYPE: $global")
-      for role <- Projection.roles(global) yield
-        val local = Projection(global, role)
-        if FreeVariables(local) && Projectability(local) && Linearity(local)
-        then println(s"LOCAL TYPE - ROLE $role:\t$local")
-        else println(s"LOCAL TYPE - ROLE $role:\tILL FORMED!")
+      if   !WellFormedness(global)
+      then println(s"GLOBAL TYPE REJECTED - ILL FORMED!")
+      else for role <- Protocol.roles(global) yield
+        val local: Protocol = Projection(global, role)
+        println(s"LOCAL TYPE - ROLE $role:\t$local")
       println()
   end test
 

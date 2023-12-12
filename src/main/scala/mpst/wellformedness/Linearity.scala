@@ -4,40 +4,23 @@ import mpst.syntax.Protocol
 import mpst.syntax.Protocol._
 
 object Linearity:
-  private def interactions(local: Protocol): Set[Protocol] =
-    local match
+  private def linearity(global: Protocol): Boolean =
+    global match
       // terminal cases //
-      case Send   (agentA, agentB, message) => Set() + Send   (agentA, agentB, message)
-      case Receive(agentA, agentB, message) => Set() + Receive(agentA, agentB, message)
-      case End                              => Set()
-      case RecursionCall(_)                 => Set()
+      case Interaction(_, _, _) => true
+      case End                  => true
+      case RecursionCall(_)     => true
       // recursive cases //
-      case RecursionFixedPoint(_, localB) => interactions(localB)
-      case Sequence(localA, localB)       => interactions(localA) ++ interactions(localB)
-      case Parallel(localA, localB)       => interactions(localA) ++ interactions(localB)
-      case Choice  (localA, localB)       => interactions(localA) ++ interactions(localB)
-      // unexpected cases //
-      case _ => throw new RuntimeException("Expected: LocalType\nFound: GlobalType")
-  end interactions
-
-  private def linearity(local: Protocol): Boolean =
-    local match
-      // terminal cases //
-      case Send   (_, _, _) => true
-      case Receive(_, _, _) => true
-      case End              => true
-      case RecursionCall(_) => true
-      // recursive cases //
-      case RecursionFixedPoint(_, localB) => linearity(localB)
-      case Sequence(localA, localB)       => linearity(localA) && linearity(localB)
-      case Parallel(localA, localB)       =>
-        val iterationsA: Set[Protocol] = interactions(localA)
-        val iterationsB: Set[Protocol] = interactions(localB)
+      case RecursionFixedPoint(_, globalB) => linearity(globalB)
+      case Sequence(globalA, globalB)      => linearity(globalA) && linearity(globalB)
+      case Parallel(globalA, globalB)      =>
+        val iterationsA: Set[Protocol] = interactions(globalA)
+        val iterationsB: Set[Protocol] = interactions(globalB)
         iterationsA.intersect(iterationsB).isEmpty
-      case Choice  (localA, localB)       => linearity(localA) && linearity(localB)
+      case Choice  (globalA, globalB)      => linearity(globalA) && linearity(globalB)
       // unexpected cases //
-      case _ => throw new RuntimeException("Expected: LocalType\nFound: GlobalType")
+      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
   end linearity
 
-  def apply(local: Protocol): Boolean = linearity(local)
+  def apply(global: Protocol): Boolean = linearity(global)
 end Linearity

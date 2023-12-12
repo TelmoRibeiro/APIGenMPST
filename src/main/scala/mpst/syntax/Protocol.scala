@@ -25,6 +25,36 @@ end Protocol
 
 // SOME FUNCTIONALITY TO PROTOCOL //
 object Protocol:
+  def roles(global: Protocol): Set[String] =
+    global match
+      // terminal cases //
+      case Interaction(agentA, agentB, _) => (Set() + agentA) + agentB
+      case End                            => Set()
+      case RecursionCall(_)               => Set()
+      // recursive cases //
+      case RecursionFixedPoint(_, globalB) => roles(globalB)
+      case Sequence(globalA, globalB)      => roles(globalA) ++ roles(globalB)
+      case Parallel(globalA, globalB)      => roles(globalA) ++ roles(globalB)
+      case Choice  (globalA, globalB)      => roles(globalA) ++ roles(globalB)
+      // unexpected cases //
+      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+  end roles
+
+  def interactions(global: Protocol): Set[Protocol] =
+    global match
+      // terminal cases //
+      case Interaction(agentA, agentB, message) => Set() + Interaction(agentA, agentB, message)
+      case End              => Set()
+      case RecursionCall(_) => Set()
+      // recursive cases //
+      case RecursionFixedPoint(_, globalB) => interactions(globalB)
+      case Sequence(globalA, globalB)      => interactions(globalA) ++ interactions(globalB)
+      case Parallel(globalA, globalB)      => interactions(globalA) ++ interactions(globalB)
+      case Choice  (globalA, globalB)      => interactions(globalA) ++ interactions(globalB)
+      // unexpected case //
+      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+  end interactions
+
   private def cleanOnce(protocol: Protocol): Protocol =
     protocol match
       // associate ";", "||" and "+" //
