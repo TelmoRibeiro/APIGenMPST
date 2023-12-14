@@ -10,7 +10,6 @@ import scala.annotation.tailrec
 enum Protocol:
   // GlobalTypes //
   case Interaction(agentA: String, agentB: String, message: String) extends Protocol // agentA>agentB:message
-  case End                                                          extends Protocol // end
   case RecursionFixedPoint(variable: String, protocolB: Protocol)   extends Protocol // μX ; G   | μX ; L
   case RecursionCall(variable: String)                              extends Protocol // X
   case Sequence(protocolA: Protocol, protocolB: Protocol)           extends Protocol // GA ;  GB | LA ;  LB
@@ -29,8 +28,7 @@ object Protocol:
     global match
       // terminal cases //
       case Interaction(agentA, agentB, _) => (Set() + agentA) + agentB
-      case End                            => Set()
-      case RecursionCall(_)               => Set()
+      case RecursionCall(_)               =>  Set()
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => roles(globalB)
       case Sequence(globalA, globalB)      => roles(globalA) ++ roles(globalB)
@@ -44,7 +42,6 @@ object Protocol:
     global match
       // terminal cases //
       case Interaction(agentA, agentB, message) => Set() + Interaction(agentA, agentB, message)
-      case End              => Set()
       case RecursionCall(_) => Set()
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => interactions(globalB)
@@ -80,7 +77,6 @@ object Protocol:
       case Choice  (protocolA, protocolB)           => Choice (cleanOnce(protocolA), cleanOnce(protocolB))
       case RecursionFixedPoint(variable, protocolB) => RecursionFixedPoint(variable, cleanOnce(protocolB))
       // terminal cases //
-      case End      => End
       case NoAction => NoAction
       case RecursionCall(variable) => RecursionCall(variable)
       case Interaction(agentA, agentB, message) => Interaction(agentA, agentB, message)

@@ -11,7 +11,6 @@ object Projection:
         if      role == agentA then Send   (agentA, agentB, message)
         else if role == agentB then Receive(agentB, agentA, message)
         else    NoAction
-      case End => End
       case RecursionCall(variable) => RecursionCall(variable)
       // recursive cases //
       case RecursionFixedPoint(variable, globalB) => RecursionFixedPoint(variable, projection(globalB, role))

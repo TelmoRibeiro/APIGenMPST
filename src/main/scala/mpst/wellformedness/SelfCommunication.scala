@@ -8,7 +8,6 @@ object SelfCommunication:
     global match
       // terminal cases //
       case Interaction(agentA, agentB, _) => agentA != agentB
-      case End                            => true
       case RecursionCall(_)               => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => selfCommunication(globalB)

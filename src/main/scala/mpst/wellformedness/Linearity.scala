@@ -8,7 +8,6 @@ object Linearity:
     global match
       // terminal cases //
       case Interaction(_, _, _) => true
-      case End                  => true
       case RecursionCall(_)     => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => linearity(globalB)

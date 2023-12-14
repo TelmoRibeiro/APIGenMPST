@@ -67,11 +67,9 @@ object Parser extends RegexParsers:
   
   private def recursionCall: Parser[Protocol] = identifier ^^ (recursionVariable => RecursionCall(recursionVariable))
 
-  private def literal: Parser[Protocol] = parentheses | end | message
+  private def literal: Parser[Protocol] = parentheses | message
 
   private def parentheses: Parser[Protocol] = "(" ~> globalType <~ ")"
-
-  private def end: Parser[Protocol] = "end" ^^^ End
 
   private def message: Parser[Protocol] =
     identifier ~ ">" ~ identifier ~ ":" ~ identifier ^^ {

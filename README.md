@@ -13,9 +13,9 @@ sbt run
 ___
 
 ### To Do:
-1) Linearity
-2) Bad Syntax: End
-3) prove **NoAction & Clean** are enough to assure a **valid projections**
+1) Relax Projectability
+2) Merge Well-Formedness
+3) prove **NoAction & Clean** are enough to assure **valid projections**
 4) develop show (pretty print)
 5) extend example's list
 6) try tail recursion most functions
@@ -33,6 +33,5 @@ ___
 ___ 
 
 ### Questions:
-- should projectability confirm that the head interaction is not the same or that no common interaction appears on both branches (current implementation)
-- should I have a functions that refuses protocols with non-reachable states
-- should we allow this kind of reuse but bind the variable in to the scope? 2
+- non-reachable(examples)
+- fixed point variables bounded to the scope or not reused at all

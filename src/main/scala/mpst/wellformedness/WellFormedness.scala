@@ -7,6 +7,5 @@ object WellFormedness:
     FreeVariables(global) &&
       Projectability(global) &&
         Linearity(global) &&
-          EndPosition(global) &&
             SelfCommunication(global)
 end WellFormedness
