@@ -3,7 +3,7 @@ package mpst.syntax
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 
-import mpst.syntax.GlobalType._
+import mpst.syntax.Protocol._
 
 object Parser extends RegexParsers:
   override val whiteSpace: Regex = "( |\t|\r|\f|\n|//.*)+".r
@@ -11,73 +11,75 @@ object Parser extends RegexParsers:
 
   private def identifier: Parser[String] = """[a-zA-Z]+""".r
 
-  private def globalType: Parser[GlobalType] =
+  private def globalType: Parser[Protocol] =
     maybeParallel ~ opt(choice) ^^ {
       case maybeParallelSyntax ~ Some(choiceSyntax) => choiceSyntax(maybeParallelSyntax)
       case maybeParallelSyntax ~ None               => maybeParallelSyntax
     }
   end globalType
 
-  private def choice: Parser[GlobalType => GlobalType] =
+  private def choice: Parser[Protocol => Protocol] =
     "+" ~ maybeParallel ~ opt(choice) ^^ {
-      case "+" ~ maybeParallelSyntax ~ Some(choiceSyntax) => (globalSyntax: GlobalType) => choiceSyntax(Choice(globalSyntax, maybeParallelSyntax))
-      case "+" ~ maybeParallelSyntax ~ None               => (globalSyntax: GlobalType) => Choice(globalSyntax, maybeParallelSyntax)
+      case "+" ~ maybeParallelSyntax ~ Some(choiceSyntax) => (globalSyntax: Protocol) => choiceSyntax(Choice(globalSyntax, maybeParallelSyntax))
+      case "+" ~ maybeParallelSyntax ~ None               => (globalSyntax: Protocol) => Choice(globalSyntax, maybeParallelSyntax)
+      case _ ~ _ ~ _                                      => throw new RuntimeException("BAD SYNTAX")
     }
   end choice
 
-  private def maybeParallel: Parser[GlobalType] =
+  private def maybeParallel: Parser[Protocol] =
     maybeSequence ~ opt(parallel) ^^ {
       case maybeSequenceSyntax ~ Some(parallelSyntax) => parallelSyntax(maybeSequenceSyntax)
       case maybeSequenceSyntax ~ None                 => maybeSequenceSyntax
     }
   end maybeParallel
 
-  private def parallel: Parser[GlobalType => GlobalType] =
+  private def parallel: Parser[Protocol => Protocol] =
     "||" ~ maybeSequence ~ opt(parallel) ^^ {
-      case "||" ~ maybeSequenceSyntax ~ Some(parallelSyntax) => (globalSyntax: GlobalType) => parallelSyntax(Parallel(globalSyntax, maybeSequenceSyntax))
-      case "||" ~ maybeSequenceSyntax ~ None                 => (globalSyntax: GlobalType) => Parallel(globalSyntax, maybeSequenceSyntax)
+      case "||" ~ maybeSequenceSyntax ~ Some(parallelSyntax) => (globalSyntax: Protocol) => parallelSyntax(Parallel(globalSyntax, maybeSequenceSyntax))
+      case "||" ~ maybeSequenceSyntax ~ None                 => (globalSyntax: Protocol) => Parallel(globalSyntax, maybeSequenceSyntax)
+      case _ ~ _ ~ _                                         => throw new RuntimeException("BAD SYNTAX")
     }
   end parallel
 
-  private def maybeSequence: Parser[GlobalType] =
+  private def maybeSequence: Parser[Protocol] =
     atomGlobalType ~ opt(sequence) ^^ {
       case atomGlobalTypeSyntax ~ Some(sequenceSyntax) => sequenceSyntax(atomGlobalTypeSyntax)
       case atomGlobalTypeSyntax ~ None                 => atomGlobalTypeSyntax
     }
   end maybeSequence
 
-  private def sequence: Parser[GlobalType => GlobalType] =
+  private def sequence: Parser[Protocol => Protocol] =
     ";" ~ atomGlobalType ~ opt(sequence) ^^ {
-      case ";" ~ atomGlobalTypeSyntax ~ Some(sequenceSyntax) => (globalSyntax: GlobalType) => sequenceSyntax(Sequence(globalSyntax, atomGlobalTypeSyntax))
-      case ";" ~ atomGlobalTypeSyntax ~ None                 => (globalSyntax: GlobalType) => Sequence(globalSyntax, atomGlobalTypeSyntax)
+      case ";" ~ atomGlobalTypeSyntax ~ Some(sequenceSyntax) => (globalSyntax: Protocol) => sequenceSyntax(Sequence(globalSyntax, atomGlobalTypeSyntax))
+      case ";" ~ atomGlobalTypeSyntax ~ None                 => (globalSyntax: Protocol) => Sequence(globalSyntax, atomGlobalTypeSyntax)
+      case _ ~ _ ~ _                                         => throw new RuntimeException("BAD SYNTAX")
     }
   end sequence
   
-  private def atomGlobalType: Parser[GlobalType] = recursionFixedPoint | literal | recursionCall
+  private def atomGlobalType: Parser[Protocol] = recursionFixedPoint | literal | recursionCall
 
-  private def recursionFixedPoint: Parser[GlobalType] =
+  private def recursionFixedPoint: Parser[Protocol] =
     "rec" ~ identifier ~ ";" ~ globalType ^^ {
-      case "rec" ~ recursionVariableID ~ ";" ~ globalSyntax => RecursionFixedPoint(recursionVariableID, globalSyntax)
+      case "rec" ~ recursionVariable ~ ";" ~ globalSyntax => RecursionFixedPoint(recursionVariable, globalSyntax)
+      case _ ~ _ ~ _ ~ _                                  => throw new RuntimeException("BAD SYNTAX")
     }
   end recursionFixedPoint
   
-  private def recursionCall: Parser[GlobalType] = identifier ^^ (recursionVariableID => RecursionCall(recursionVariableID))
+  private def recursionCall: Parser[Protocol] = identifier ^^ (recursionVariable => RecursionCall(recursionVariable))
 
-  private def literal: Parser[GlobalType] = parentheses | end | message
+  private def literal: Parser[Protocol] = parentheses | message
 
-  private def parentheses: Parser[GlobalType] = "(" ~> globalType <~ ")"
+  private def parentheses: Parser[Protocol] = "(" ~> globalType <~ ")"
 
-  private def end: Parser[GlobalType] = "end" ^^^ End
-
-  private def message: Parser[GlobalType] =
+  private def message: Parser[Protocol] =
     identifier ~ ">" ~ identifier ~ ":" ~ identifier ^^ {
-      case idA ~ ">" ~ idB ~ ":" ~ t => Interaction(idA, idB, t)
+      case agentA ~ ">" ~ agentB ~ ":" ~ message => Interaction(agentA, agentB, message)
     }
   end message
 
-  def apply(input: String): GlobalType =
+  def apply(input: String): Protocol =
     parseAll(globalType, input) match
-      case Success(global, _)    => clean(global)
-      case NoSuccess(message, _) => throw new RuntimeException(s"Parsing Failed!\n MSG: $message")
-
+      case Success(global, _) => Protocol(global)
+      case _                  => throw new RuntimeException(s"PARSING FAILED!\n")
+  end apply
 end Parser

@@ -1,39 +1,25 @@
 package mpst.projection
 
-/*  To Do:
-    1) clean up imports
-    2) check if clean is enough to assure correct translation
-*/
-import mpst.syntax.GlobalType
-import mpst.syntax.LocalType
-import mpst.syntax.GlobalType.*
-import mpst.syntax.LocalType.*
+import mpst.syntax.Protocol
+import mpst.syntax.Protocol._
 
 object Projection:
-  private def roles(global: GlobalType): Set[String] =
+  private def projection(global: Protocol, role: String): Protocol =
     global match
-      case Interaction(idA, idB, _)       => List(idA, idB).toSet
-      case End                            => Set()
-      case RecursionFixedPoint(_, global) => roles(global)
-      case RecursionCall(_)               => Set()
-      case Sequence(globalA, globalB)     => roles(globalA) ++ roles(globalB)
-      case Parallel(globalA, globalB)     => roles(globalA) ++ roles(globalB)
-      case Choice  (globalA, globalB)     => roles(globalA) ++ roles(globalB)
-  end roles
-
-  private def projection(global: GlobalType, role: String): LocalType =
-    global match
-      case Interaction(idA, idB, message)        =>
-       if       role == idA then LocalSend   (idA, idB, message)
-       else if  role == idB then LocalReceive(idB, idA, message)
-       else     LocalEnd
-      case End                                   => LocalEnd
-      case RecursionFixedPoint(variable, global) => LocalRecursionFixedPoint(variable, projection(global, role))
-      case RecursionCall(variable)               => LocalRecursionCall(variable)
-      case Sequence(globalA, globalB)            => LocalSequence(projection(globalA, role), projection(globalB, role))
-      case Parallel(globalA, globalB)            => LocalParallel(projection(globalA, role), projection(globalB, role))
-      case Choice  (globalA, globalB)            => LocalChoice  (projection(globalA, role), projection(globalB, role))
+      // terminal cases //
+      case Interaction(agentA, agentB, message) =>
+        if      role == agentA then Send   (agentA, agentB, message)
+        else if role == agentB then Receive(agentB, agentA, message)
+        else    NoAction
+      case RecursionCall(variable) => RecursionCall(variable)
+      // recursive cases //
+      case RecursionFixedPoint(variable, globalB) => RecursionFixedPoint(variable, projection(globalB, role))
+      case Sequence(globalA, globalB) => Sequence(projection(globalA, role), projection(globalB, role))
+      case Parallel(globalA, globalB) => Parallel(projection(globalA, role), projection(globalB, role))
+      case Choice  (globalA, globalB) => Choice  (projection(globalA, role), projection(globalB, role))
+      // unexpected cases //
+      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
   end projection
 
-  def apply(global: GlobalType): Set[LocalType] = for role <- roles(global) yield LocalType.clean(projection(global, role))
+  def apply(global: Protocol, role: String): Protocol = Protocol(projection(global, role))
 end Projection
