@@ -13,12 +13,11 @@ sbt run
 ___
 
 ### To Do:
-1) Relax Projectability
-2) Merge Well-Formedness
-3) prove **NoAction & Clean** are enough to assure **valid projections**
-4) develop show (pretty print)
-5) extend example's list
-6) try tail recursion most functions
+1) Merge Well-Formedness
+2) prove **NoAction & Clean** are enough to assure **valid projections**
+3) develop show (pretty print)
+4) extend example's list
+5) try tail recursion most functions
 
 ___
 
@@ -35,3 +34,11 @@ ___
 ### Questions:
 - non-reachable(examples)
 - fixed point variables bounded to the scope or not reused at all
+- check if the new Projectability is enough relaxed and right
+
+> Projectability Dilemma:  
+> headInteraction(global: Protocol): Set[Protocol] is not enough  
+> Ex: "(broker>buyer:Notify ; buyer>seller:Msg ; seller>buyer:Pay + broker>buyer:Quit ; buyer>seller:Msg)"  
+> Above HeadInteraction() would pick up {broker>buyer:Notify} and {broker>buyer:Quit} which is enough to "globally" understand if we are in the left branch or the right one  
+> Nonetheless, "locally" seller only knows that he will be receiving a Msg from buyer not aware which branch that action belongs to  
+> Therefore, we need at least a headInteraction(global: Protocol, role: String): Set[Protocol] which takes into account every role and checks that no role would be confused

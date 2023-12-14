@@ -38,6 +38,25 @@ object Protocol:
       case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
   end roles
 
+  def headInteraction(global: Protocol, role: String): Set[Protocol] =
+    global match
+      // terminal cases //
+      case Interaction(agentA, agentB, message) =>
+        if   role != agentA && role != agentB  then Set()
+        else Set() + Interaction(agentA, agentB, message)
+      case RecursionCall(_) => Set()
+      // recursive cases //
+      case RecursionFixedPoint(_, globalB) => headInteraction(globalB, role)
+      case Sequence(globalA, globalB)      =>
+        val headGlobalA: Set[Protocol] = headInteraction(globalA, role)
+        val headGlobalB: Set[Protocol] = headInteraction(globalB, role)
+        if headGlobalA.nonEmpty then headGlobalA else if headGlobalB.nonEmpty then headGlobalB else Set()
+      case Parallel(globalA, globalB)      => headInteraction(globalA, role) ++ headInteraction(globalB, role)
+      case Choice  (globalA, globalB)      => headInteraction(globalA, role) ++ headInteraction(globalB, role)
+      // unexpected cases //
+      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+  end headInteraction
+
   def interactions(global: Protocol): Set[Protocol] =
     global match
       // terminal cases //
