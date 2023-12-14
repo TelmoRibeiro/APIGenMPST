@@ -12,7 +12,7 @@ object Tests:
   )
 
   // FreeVariables Testing //
-  private val FVList: List[String] = List (
+  private val freeVariablesList: List[String] = List (
     // Expected Output: rejected - Y   belongs to FVs //
     "rec X ; (m>wA:Work || m>wB:Done) ; Y",
     // Expected Output: rejected - X   belongs to FVs //
@@ -22,7 +22,7 @@ object Tests:
   )
 
   // Parallel Race Condition Testing //
-  private val RCList: List[String] = List (
+  private val raceConditionsList: List[String] = List (
     // Expected Output: rejected - possible race condition //
     "rec X ; (m>wA:Work ; X  || m>wB:Work ; X)",
     // Expected Output: accepted //
@@ -32,7 +32,7 @@ object Tests:
   )
 
   // Projectability Testing //
-  private val PList: List[String] = List (
+  private val projectabilityList: List[String] = List (
     // Expected Output: rejected - "buyer>seller:Msg" in both branches //
     "(broker>buyer:Notify ; buyer>seller:Msg ; seller>buyer:Pay + broker>buyer:Quit ; buyer>seller:Msg)",
     // Expected Output: accepted //
@@ -40,47 +40,39 @@ object Tests:
   )
 
   // Linearity Testing //
-  private val LList: List[String] = List (
+  private val linearityList: List[String] = List (
     // Expected Output: rejected - "wB>m:None" in both branches //
     "m>wA:Work ; m>wB:Work ; (wA>m:Done ; wB>m:None || wA>m:None ; wB>m:None)",
   )
 
   // Self Communication Testing //
-  private val SCList: List[String] = List (
+  private val selfCommunicationList: List[String] = List (
     // Expected Output: rejected - no self communication //
     "m>wA:Work ; wA>wA:Done"
   )
 
   private def test(protocolList: List[String]): Unit =
     for protocol <- protocolList yield
-      println(s"INPUT: $protocol")
+      println(s"PROTOCOL: $protocol")
       val global: Protocol = Parser(protocol)
       println(s"GLOBAL TYPE: $global")
       if   !WellFormedness(global)
-      then println(s"GLOBAL TYPE REJECTED - ILL FORMED!")
+      then println(s"PROJECTION REJECTED!")
       else for role <- Protocol.roles(global) yield
         val local: Protocol = Projection(global, role)
-        println(s"LOCAL TYPE - ROLE $role:\t$local")
+        println(s"LOCAL TYPE ($role): $local")
       println()
+    println()
+    println()
   end test
 
   def apply(): Unit =
-    println("STANDARD TESTING")
+    println("SOME HACKY TESTS:")
     test(standardList)
-    println()
-    println("FREE VARIABLES TESTING")
-    test(FVList)
-    println()
-    println("RACE CONDITIONS TESTING")
-    test(RCList)
-    println()
-    println("PROJECTABILITY TESTING")
-    test(PList)
-    println()
-    println("LINEARITY TESTING")
-    test(LList)
-    println("SELF COMMUNICATION TESTING")
-    test(SCList)
-    println()
+    test(freeVariablesList)
+    test(raceConditionsList)
+    test(projectabilityList)
+    test(linearityList)
+    test(selfCommunicationList)
   end apply
 end Tests

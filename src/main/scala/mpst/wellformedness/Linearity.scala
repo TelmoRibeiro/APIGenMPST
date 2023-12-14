@@ -15,7 +15,7 @@ object Linearity:
       case Parallel(globalA, globalB)      =>
         val iterationsA: Set[Protocol] = interactions(globalA)
         val iterationsB: Set[Protocol] = interactions(globalB)
-        iterationsA.intersect(iterationsB).isEmpty
+        (iterationsA intersect iterationsB).isEmpty
       case Choice  (globalA, globalB)      => linearity(globalA) && linearity(globalB)
       // unexpected cases //
       case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")

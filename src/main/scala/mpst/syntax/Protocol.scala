@@ -2,7 +2,8 @@ package mpst.syntax
 
 import scala.annotation.tailrec
 
-/*  PROTOCOL'S GRAMMAR:
+/*
+    PROTOCOL'S GRAMMAR:
       - GlobalTypes
       - LocalTypes
       - NoAction
@@ -50,7 +51,9 @@ object Protocol:
       case Sequence(globalA, globalB)      =>
         val headGlobalA: Set[Protocol] = headInteraction(globalA, role)
         val headGlobalB: Set[Protocol] = headInteraction(globalB, role)
-        if headGlobalA.nonEmpty then headGlobalA else if headGlobalB.nonEmpty then headGlobalB else Set()
+        if      headGlobalA.nonEmpty then headGlobalA
+        else if headGlobalB.nonEmpty then headGlobalB
+        else    Set()
       case Parallel(globalA, globalB)      => headInteraction(globalA, role) ++ headInteraction(globalB, role)
       case Choice  (globalA, globalB)      => headInteraction(globalA, role) ++ headInteraction(globalB, role)
       // unexpected cases //
@@ -99,13 +102,13 @@ object Protocol:
       case NoAction => NoAction
       case RecursionCall(variable) => RecursionCall(variable)
       case Interaction(agentA, agentB, message) => Interaction(agentA, agentB, message)
-      case Send   (agentA, agentB, message) => Send   (agentA, agentB, message)
-      case Receive(agentA, agentB, message) => Receive(agentA, agentB, message)
+      case Send   (agentA, agentB, message)     => Send   (agentA, agentB, message)
+      case Receive(agentA, agentB, message)     => Receive(agentA, agentB, message)
   end cleanOnce
 
   @tailrec
   private def clean(protocol: Protocol): Protocol =
-    val cleanProtocol = cleanOnce(protocol)
+    val cleanProtocol: Protocol = cleanOnce(protocol)
     if  cleanProtocol == protocol then protocol else clean(cleanProtocol)
   end clean
 
