@@ -1,25 +1,25 @@
 package mpst.projection
 
 import mpst.syntax.Protocol
-import mpst.syntax.Protocol._
+import mpst.syntax.Protocol.*
 
 object Projection:
-  private def projection(global: Protocol, role: String): Protocol =
+  private def projection(global: Protocol, role: String): Option[Protocol] =
     global match
       // terminal cases //
       case Interaction(agentA, agentB, message) =>
-        if      role == agentA then Send   (agentA, agentB, message)
-        else if role == agentB then Receive(agentB, agentA, message)
-        else    NoAction
-      case RecursionCall(variable) => RecursionCall(variable)
+        if      role == agentA then Some(Send   (agentA, agentB, message))
+        else if role == agentB then Some(Receive(agentB, agentA, message))
+        else    Some(Skip)
+      case RecursionCall(variable) => Some(RecursionCall(variable))
       // recursive cases //
-      case RecursionFixedPoint(variable, globalB) => RecursionFixedPoint(variable, projection(globalB, role))
-      case Sequence(globalA, globalB) => Sequence(projection(globalA, role), projection(globalB, role))
-      case Parallel(globalA, globalB) => Parallel(projection(globalA, role), projection(globalB, role))
-      case Choice  (globalA, globalB) => Choice  (projection(globalA, role), projection(globalB, role))
+      case RecursionFixedPoint(variable, globalB) => Some(RecursionFixedPoint(variable, projection(globalB, role).get))
+      case Sequence(globalA, globalB) => Some(Sequence(projection(globalA, role).get, projection(globalB, role).get))
+      case Parallel(globalA, globalB) => Some(Parallel(projection(globalA, role).get, projection(globalB, role).get))
+      case Choice  (globalA, globalB) => Some(Choice  (projection(globalA, role).get, projection(globalB, role).get))
       // unexpected cases //
-      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+      case _ => None
   end projection
 
-  def apply(global: Protocol, role: String): Protocol = Protocol(projection(global, role))
+  def apply(global: Protocol, role: String): Protocol = Protocol(projection(global, role).get)
 end Projection

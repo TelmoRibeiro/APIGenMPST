@@ -14,10 +14,11 @@ ___
 
 ### To Do:
 1) Merge Well-Formedness Definitions (**Better Performance**)
-2) Prove **NoAction + Clean** are enough to ensure **valid projections**
+2) Fix Projections
 3) Develop Show (**pretty print**)
 4) Extend example's list
 5) Try to tail-recurse most functions
+6) Optimize binary to limitless
 
 ___
 
@@ -33,5 +34,3 @@ ___
 
 ### Questions:
 - are there non-reachable states?
-- should fixed point variables be bounded to the scope or should we not allow reuse in an inner block?
-- is Projectability right and relaxed enough?

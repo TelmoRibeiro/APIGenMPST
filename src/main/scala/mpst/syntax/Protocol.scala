@@ -6,21 +6,21 @@ import scala.annotation.tailrec
     PROTOCOL'S GRAMMAR:
       - GlobalTypes
       - LocalTypes
-      - NoAction
+      - Internal
 */
 enum Protocol:
   // GlobalTypes //
-  case Interaction(agentA: String, agentB: String, message: String) extends Protocol // agentA>agentB:message
-  case RecursionFixedPoint(variable: String, protocolB: Protocol)   extends Protocol // μX ; G   | μX ; L
-  case RecursionCall(variable: String)                              extends Protocol // X
-  case Sequence(protocolA: Protocol, protocolB: Protocol)           extends Protocol // GA ;  GB | LA ;  LB
-  case Parallel(protocolA: Protocol, protocolB: Protocol)           extends Protocol // GA || GB | LA || LB
-  case Choice  (protocolA: Protocol, protocolB: Protocol)           extends Protocol // GA +  GB | LA +  LB
+  case Interaction(agentA: String, agentB: String, message: String) // agentA>agentB:message
+  case RecursionFixedPoint(variable: String, protocolB: Protocol) // μX ; G   | μX ; L
+  case RecursionCall(variable: String) // X
+  case Sequence(protocolA: Protocol, protocolB: Protocol) // GA ;  GB | LA ;  LB
+  case Parallel(protocolA: Protocol, protocolB: Protocol) // GA || GB | LA || LB
+  case Choice(protocolA: Protocol, protocolB: Protocol) // GA +  GB | LA +  LB
   // LocalTypes //
-  case Send   (agentA: String, agentB: String, message: String)     extends Protocol // agentA,agentB!message
-  case Receive(agentA: String, agentB: String, message: String)     extends Protocol // agentA,agentB?message
-  // NoAction //
-  case NoAction                                                     extends Protocol
+  case Send(agentA: String, agentB: String, message: String) // agentAagentB!message
+  case Receive(agentA: String, agentB: String, message: String) // agentAagentB?message
+  // Internal //
+  case Skip
 end Protocol
 
 // SOME FUNCTIONALITY TO PROTOCOL //
@@ -81,13 +81,13 @@ object Protocol:
       case Parallel(Parallel(protocolA, protocolB), protocolC) => cleanOnce(Parallel(protocolA, Parallel(protocolB, protocolC)))
       case Choice  (Choice  (protocolA, protocolB), protocolC) => cleanOnce(Choice(protocolA,   Choice  (protocolB, protocolC)))
       // propagate "NoAction"
-      case Sequence(NoAction, protocolB)    => cleanOnce(protocolB)
-      case Sequence(protocolA, NoAction)    => cleanOnce(protocolA)
-      case Parallel(NoAction, protocolB)    => cleanOnce(protocolB)
-      case Parallel(protocolA, NoAction)    => cleanOnce(protocolA)
-      case Choice  (NoAction, protocolB)    => cleanOnce(protocolB)
-      case Choice  (protocolA, NoAction)    => cleanOnce(protocolA)
-      case RecursionFixedPoint(_, NoAction) => NoAction
+      case Sequence(Skip, protocolB)    => cleanOnce(protocolB)
+      case Sequence(protocolA, Skip)    => cleanOnce(protocolA)
+      case Parallel(Skip, protocolB)    => cleanOnce(protocolB)
+      case Parallel(protocolA, Skip)    => cleanOnce(protocolA)
+      case Choice  (Skip, protocolB)    => cleanOnce(protocolB)
+      case Choice  (protocolA, Skip)    => cleanOnce(protocolA)
+      case RecursionFixedPoint(_, Skip) => Skip
       // recursive cases //
         // testing //
       case Parallel(RecursionCall(_), protocolB) => cleanOnce(protocolB)
@@ -99,7 +99,7 @@ object Protocol:
       case Choice  (protocolA, protocolB)           => Choice (cleanOnce(protocolA), cleanOnce(protocolB))
       case RecursionFixedPoint(variable, protocolB) => RecursionFixedPoint(variable, cleanOnce(protocolB))
       // terminal cases //
-      case NoAction => NoAction
+      case Skip => Skip
       case RecursionCall(variable) => RecursionCall(variable)
       case Interaction(agentA, agentB, message) => Interaction(agentA, agentB, message)
       case Send   (agentA, agentB, message)     => Send   (agentA, agentB, message)
