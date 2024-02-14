@@ -21,15 +21,17 @@ object Disambiguation:
   private def disambiguation(global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction(_, _, _) => true
-      case RecursionCall(_)     => true
+      case Interaction  (_, _, _) => true
+      case RecursionCall(_)       => true
+      case End                    => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => disambiguation(globalB)
       case Sequence(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
       case Parallel(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
       case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, roles(global), true)
       // unexpected cases //
-      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case _    => throw new RuntimeException("unexpected local type found\n")
   end disambiguation
 
   def apply(global: Protocol): Boolean = disambiguation(global)

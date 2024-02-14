@@ -7,15 +7,17 @@ object SelfCommunication:
   private def selfCommunication(global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction(agentA, agentB, _) => agentA != agentB
-      case RecursionCall(_)               => true
+      case Interaction  (agentA, agentB, _) => agentA != agentB
+      case RecursionCall(_)                 => true
+      case End                              => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => selfCommunication(globalB)
       case Sequence(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
       case Parallel(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
       case Choice  (globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
       // unexpected cases //
-      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case _    => throw new RuntimeException("unexpected local type found\n")
   end selfCommunication
   
   def apply(global: Protocol): Boolean = selfCommunication(global)

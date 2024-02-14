@@ -9,6 +9,7 @@ object Linearity:
       // terminal cases //
       case Interaction(_, _, _) => true
       case RecursionCall(_)     => true
+      case End                  => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => linearity(globalB)
       case Sequence(globalA, globalB)      => linearity(globalA) && linearity(globalB)
@@ -18,7 +19,8 @@ object Linearity:
         (iterationsA intersect iterationsB).isEmpty
       case Choice  (globalA, globalB)      => linearity(globalA) && linearity(globalB)
       // unexpected cases //
-      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case _    => throw new RuntimeException("unexpected local type found\n")
   end linearity
 
   def apply(global: Protocol): Boolean = linearity(global)

@@ -67,7 +67,7 @@ object Parser extends RegexParsers:
   
   private def recursionCall: Parser[Protocol] = identifier ^^ (recursionVariable => RecursionCall(recursionVariable))
 
-  private def literal: Parser[Protocol] = parentheses | message
+  private def literal: Parser[Protocol] = parentheses | message | end
 
   private def parentheses: Parser[Protocol] = "(" ~> globalType <~ ")"
 
@@ -76,6 +76,8 @@ object Parser extends RegexParsers:
       case agentA ~ ">" ~ agentB ~ ":" ~ message => Interaction(agentA, agentB, message)
     }
   end message
+
+  private def end: Parser[Protocol] = "end" ^^^ End
 
   def apply(input: String): Protocol =
     parseAll(globalType, input) match

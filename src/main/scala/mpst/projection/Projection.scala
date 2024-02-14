@@ -12,6 +12,7 @@ object Projection:
         else if role == agentB then Some(Receive(agentB, agentA, message))
         else    Some(Skip)
       case RecursionCall(variable) => Some(RecursionCall(variable))
+      case End                     => Some(End)
       // recursive cases //
       case RecursionFixedPoint(variable, globalB) => Some(RecursionFixedPoint(variable, projection(globalB, role).get))
       case Sequence(globalA, globalB) => Some(Sequence(projection(globalA, role).get, projection(globalB, role).get))

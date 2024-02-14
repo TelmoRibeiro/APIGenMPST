@@ -7,8 +7,9 @@ object FreeVariables:
   private def freeVariables(variables: Set[String], global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction(_, _, _)    => true
+      case Interaction  (_, _, _)  => true
       case RecursionCall(variable) => variables.contains(variable)
+      case End                     => true
       // recursive cases //
       case RecursionFixedPoint(variable, globalB) => freeVariables(variables + variable, globalB)
       case Sequence(globalA, globalB)  =>
@@ -18,7 +19,8 @@ object FreeVariables:
       case Parallel(globalA, globalB)  => freeVariables(Set(), globalA) && freeVariables(Set(), globalB)
       case Choice  (globalA, globalB)  => freeVariables(variables, globalA) && freeVariables(variables, globalB)
       // unexpected cases //
-      case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case _    => throw new RuntimeException("unexpected local type found\n")
   end freeVariables
 
   def apply(global: Protocol): Boolean = freeVariables(Set(), global)
