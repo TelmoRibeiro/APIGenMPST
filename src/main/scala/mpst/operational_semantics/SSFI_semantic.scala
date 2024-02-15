@@ -9,20 +9,12 @@ import mpst.syntax.Protocol.*
   - Free Interleaving
 
   TO DEBATE:
-    - since I am using fixed points I need an environment to store the correlation
-      between recursion variable X and local type L (gamma), can I still extend caos?
-    - caos expects  : Action -> State
-      reduce outputs: Environment -> (Action -> State)
-      is it as easy as unpacking? won't environment be needed internally?
     - why we need End? check accept!
       Normalization for local types would invalidate the need for end
     - Send/Receive (Out/In) -
       Receive needed as a middle step of Interaction(Send)
       but we do not stipulate semantics for global types but instead for local types
     - Recursion behaving as expected?
-    - show oneStep, don't we need to clean here as well?
-      L = Sequence(End, RecursionCall(X)) becomes cleanL = RecursionCall(X)
-    -
 */
 
 object SSFI_semantic:

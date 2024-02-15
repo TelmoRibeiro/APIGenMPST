@@ -162,6 +162,9 @@ object Protocol:
       case RecursionFixedPoint(_, End)  => End
       case RecursionFixedPoint(_, Skip) => Skip
       // recursive cases //
+      // testing begins
+      case RecursionFixedPoint(variableA, RecursionCall(variableB)) if variableA == variableB => Skip
+      // testing ends
       case Sequence(protocolA, protocolB) => Sequence(cleanOnce(protocolA), cleanOnce(protocolB))
       case Parallel(protocolA, protocolB) => Parallel(cleanOnce(protocolA), cleanOnce(protocolB))
       case Choice  (protocolA, protocolB) if protocolA == protocolB => cleanOnce(protocolA)
