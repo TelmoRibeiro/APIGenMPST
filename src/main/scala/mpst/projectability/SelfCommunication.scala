@@ -16,8 +16,8 @@ object SelfCommunication:
       case Parallel(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
       case Choice  (globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
       // unexpected cases //
-      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
-      case _    => throw new RuntimeException("unexpected local type found\n")
+      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end selfCommunication
   
   def apply(global: Protocol): Boolean = selfCommunication(global)

@@ -26,7 +26,7 @@ import mpst.syntax.Protocol.*
 */
 
 object SSFI_semantic:
-  private def accept(local: Protocol): Boolean =
+  def accept(local: Protocol): Boolean =
     local match
       // terminal cases //
       case    Send(agentA, agentB, message) => false
@@ -34,16 +34,16 @@ object SSFI_semantic:
       case RecursionCall(_)                 => false
       case End                              => true
       // recursive cases //
+      case RecursionFixedPoint(_, localB) => accept(localB)
       case Sequence(localA, localB) => accept(localA) && accept(localB)
       case Parallel(localA, localB) => accept(localA) && accept(localB)
       case   Choice(localA, localB) => accept(localA) || accept(localB)
-      case RecursionFixedPoint(_, localB) => accept(localB)
       // unexpected cases //
-      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
-      case _    => throw new RuntimeException("unexpected global type found\n")
+      case Skip   => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case global => throw new RuntimeException(s"unexpected global type $global found\n")
   end accept
 
-  private def reduce(environment: Map[String, Protocol], local: Protocol): List[(Map[String, Protocol], (Protocol, Protocol))] =
+  def reduce(environment: Map[String, Protocol], local: Protocol): List[(Map[String, Protocol], (Protocol, Protocol))] =
     local match
       // terminal cases //
       case Send   (agentA, agentB, message) => List(environment -> (Send   (agentA, agentB, message) -> End))
@@ -87,19 +87,4 @@ object SSFI_semantic:
       case Skip   => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case global => throw new RuntimeException(s"unexpected global type $global found\n")
   end reduce
-
-  private def network(environment: Map[String, Protocol], local: Protocol, maxDepth: Int = 5): Unit =
-    if maxDepth <= 0 then
-      println("@ Depth <= 0\n")
-      return
-    val nextStepList: List[(Map[String,Protocol],(Protocol,Protocol))] = reduce(environment, local)
-    for nextEnvironment -> (nextLabel -> nextLocal) <- nextStepList
-    yield
-      println(s"Label: $nextLabel")
-      println(s"Local: $nextLocal")
-      println()
-      network(nextEnvironment, nextLocal, maxDepth - 1)
-  end network
-
-  def apply(local: Protocol): Unit = network(Map(), local)
 end SSFI_semantic

@@ -16,11 +16,11 @@ object FreeVariables:
         globalA match
           case RecursionCall(variable) => freeVariables(variables, globalA) && freeVariables(variables - variable, globalB)
           case _                       => freeVariables(variables, globalA) && freeVariables(variables, globalB)
-      case Parallel(globalA, globalB)  => freeVariables(Set(), globalA) && freeVariables(Set(), globalB)
+      case Parallel(globalA, globalB)  => freeVariables(Set(), globalA)     && freeVariables(Set(), globalB)
       case Choice  (globalA, globalB)  => freeVariables(variables, globalA) && freeVariables(variables, globalB)
       // unexpected cases //
-      case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
-      case _    => throw new RuntimeException("unexpected local type found\n")
+      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end freeVariables
 
   def apply(global: Protocol): Boolean = freeVariables(Set(), global)

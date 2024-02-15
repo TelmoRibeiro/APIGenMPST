@@ -20,10 +20,10 @@ object WSFI_semantic:
       case RecursionCall(_)                 => false
       case End                              => true
       // recursive cases //
+      case RecursionFixedPoint(_, localB) => accept(localB)
       case Sequence(localA, localB) => accept(localA) && accept(localB)
       case Parallel(localA, localB) => accept(localA) && accept(localB)
       case   Choice(localA, localB) => accept(localA) || accept(localB)
-      case RecursionFixedPoint(_, localB) => accept(localB)
       // unexpected cases //
       case Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case _    => throw new RuntimeException("unexpected global type found\n")
@@ -83,19 +83,4 @@ object WSFI_semantic:
       case Skip   => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case global => throw new RuntimeException(s"unexpected global type $global found\n")
   end reduce
-
-  private def network(environment: Map[String, Protocol], conflictingRoles: Set[String], local: Protocol, maxDepth: Int = 5): Unit =
-    if maxDepth <= 0 then
-      println("@ Depth <= 0\n")
-      return
-    val nextStepList: List[(Map[String,Protocol],(Protocol,Protocol))] = reduce(environment, conflictingRoles, local)
-    for nextEnvironment -> (nextLabel -> nextLocal) <- nextStepList
-    yield
-      println(s"Label: $nextLabel")
-      println(s"Local: $nextLocal")
-      println()
-      network(nextEnvironment, conflictingRoles, nextLocal, maxDepth - 1)
-  end network
-
-  def apply(local: Protocol): Unit = network(Map(), Set(), local)
 end WSFI_semantic

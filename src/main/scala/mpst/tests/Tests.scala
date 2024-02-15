@@ -3,7 +3,7 @@ package mpst.tests
 import mpst.syntax.{Protocol, Parser}
 import mpst.projectability.Projectability
 import mpst.projection.Projection
-import mpst.operational_semantics.SSFI_semantic
+import mpst.encoding.NoEncoding
 
 object Tests:
   // Standard Testing //
@@ -62,7 +62,7 @@ object Tests:
       else for role <- Protocol.roles(global) yield
         val local: Protocol = Projection(global, role)
         println(s"LOCAL TYPE ($role): $local")
-        SSFI_semantic(local)
+        NoEncoding(local)
         println()
       println()
     println()

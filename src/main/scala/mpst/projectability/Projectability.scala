@@ -8,4 +8,5 @@ object Projectability:
       Disambiguation(global) &&
         Linearity(global) &&
             SelfCommunication(global)
+  end apply
 end Projectability

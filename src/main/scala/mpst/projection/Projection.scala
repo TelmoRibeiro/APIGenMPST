@@ -11,15 +11,16 @@ object Projection:
         if      role == agentA then Some(Send   (agentA, agentB, message))
         else if role == agentB then Some(Receive(agentB, agentA, message))
         else    Some(Skip)
-      case RecursionCall(variable) => Some(RecursionCall(variable))
-      case End                     => Some(End)
+      case RecursionCall(variable) => Some(global)
+      case End                     => Some(global)
       // recursive cases //
       case RecursionFixedPoint(variable, globalB) => Some(RecursionFixedPoint(variable, projection(globalB, role).get))
       case Sequence(globalA, globalB) => Some(Sequence(projection(globalA, role).get, projection(globalB, role).get))
       case Parallel(globalA, globalB) => Some(Parallel(projection(globalA, role).get, projection(globalB, role).get))
       case Choice  (globalA, globalB) => Some(Choice  (projection(globalA, role).get, projection(globalB, role).get))
       // unexpected cases //
-      case _ => None
+      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
+      case local => None
   end projection
 
   def apply(global: Protocol, role: String): Protocol = Protocol(projection(global, role).get)
