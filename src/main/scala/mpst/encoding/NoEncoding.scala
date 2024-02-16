@@ -1,7 +1,8 @@
 package mpst.encoding
 
 import mpst.syntax.Protocol
-import mpst.operational_semantics.SSFI_semantic
+// import mpst.operational_semantic.SSFI_semantic
+import mpst.operational_semantic.WSFI_semantic
 
 object NoEncoding:
   // lazy implementation to traverse the semantic output //
@@ -18,9 +19,9 @@ object NoEncoding:
       lazyTraverse(nextStates.tail, visitedStates)
       return
     println()
-    val  children = SSFI_semantic.reduce(stateEnvironment, stateLocal)
+    val  children = WSFI_semantic.reduce(stateEnvironment, stateLocal)
     lazyTraverse(children ++ nextStates.tail, visitedStates + nextStates.head)
   end lazyTraverse
 
-  def apply(local: Protocol): Unit = lazyTraverse(SSFI_semantic.reduce(Map(), local), Set())
+  def apply(local: Protocol): Unit = lazyTraverse(WSFI_semantic.reduce(Map(), local), Set())
 end NoEncoding

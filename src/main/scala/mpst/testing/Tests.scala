@@ -1,4 +1,4 @@
-package mpst.tests
+package mpst.testing
 
 import mpst.syntax.{Protocol, Parser}
 import mpst.projectability.Projectability
