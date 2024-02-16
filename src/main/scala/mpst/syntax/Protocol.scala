@@ -26,15 +26,8 @@ end Protocol
 
 // SOME FUNCTIONALITY TO PROTOCOL //
 object Protocol:
-  def isLocal(protocol: Protocol): Boolean =
-    // do we have assertions?
-    ???
-  end isLocal
-
-  def isGlobal(protocol: Protocol): Boolean =
-    // do we have assertions?
-    ???
-  end isGlobal
+  type Action = Protocol
+  type State  = (Map[String,Protocol],Protocol)
 
   def roles(protocol: Protocol): Set[String] =
     protocol match

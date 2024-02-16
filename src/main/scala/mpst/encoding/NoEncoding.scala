@@ -1,26 +1,26 @@
 package mpst.encoding
 
 import mpst.syntax.Protocol
-// import mpst.operational_semantic.SSFI_semantic
+import mpst.syntax.Protocol.*
 import mpst.operational_semantic.WSFI_semantic
 
 object NoEncoding:
   // lazy implementation to traverse the semantic output //
-  private def lazyTraverse(nextStates: List[(Map[String,Protocol],(Protocol,Protocol))], visitedStates: Set[(Map[String,Protocol],(Protocol,Protocol))]): Unit =
-    if nextStates.isEmpty then
+  private def lazyTraverse(nextReductions: List[(Action,State)], visitedReductions: Set[(Action,State)]): Unit =
+    if nextReductions.isEmpty then
       println("done traversing")
       return
-    val state = nextStates.head
-    val stateEnvironment -> (stateAction -> stateLocal) = state
-    println(s"Action: $stateAction")
-    println(s"Local:  $stateLocal")
-    if visitedStates contains state then
-      println("state was visited already\n")
-      lazyTraverse(nextStates.tail, visitedStates)
+    val reduction = nextReductions.head
+    val reductionAction -> (reductionEnvironment -> reductionLocal) = reduction
+    println(s"Action: $reductionAction")
+    println(s" Local: $reductionLocal")
+    if visitedReductions contains reduction then
+      println("reduction was visited already\n")
+      lazyTraverse(nextReductions.tail, visitedReductions)
       return
     println()
-    val  children = WSFI_semantic.reduce(stateEnvironment, stateLocal)
-    lazyTraverse(children ++ nextStates.tail, visitedStates + nextStates.head)
+    val  children = WSFI_semantic.reduce(reductionEnvironment, reductionLocal)
+    lazyTraverse(children ++ nextReductions.tail, visitedReductions + nextReductions.head)
   end lazyTraverse
 
   def apply(local: Protocol): Unit = lazyTraverse(WSFI_semantic.reduce(Map(), local), Set())
