@@ -60,7 +60,7 @@ object Tests:
       if   !Projectability(global)
       then println(s"PROJECTION REJECTED!")
       else for role <- Protocol.roles(global) yield
-        val local: Protocol = Projection(global, role)
+        val local: Protocol = Projection(role, global)
         println(s"LOCAL TYPE ($role): $local")
         NoEncoding(local)
         println()

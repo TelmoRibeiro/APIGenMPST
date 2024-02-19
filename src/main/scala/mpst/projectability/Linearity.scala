@@ -19,7 +19,6 @@ object Linearity:
         (iterationsA intersect iterationsB).isEmpty
       case Choice  (globalA, globalB)      => linearity(globalA) && linearity(globalB)
       // unexpected cases //
-      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end linearity
 

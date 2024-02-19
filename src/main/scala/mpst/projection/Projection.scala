@@ -4,24 +4,56 @@ import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
 
 object Projection:
-  private def projection(global: Protocol, role: String): Option[Protocol] =
+  private def projection(global: Protocol)(using role: String): Option[Protocol] =
     global match
       // terminal cases //
       case Interaction(agentA, agentB, message) =>
-        if      role == agentA then Some(Send   (agentA, agentB, message))
+        if      role == agentA then Some(   Send(agentA, agentB, message))
         else if role == agentB then Some(Receive(agentB, agentA, message))
-        else    Some(Skip)
+        else    None
       case RecursionCall(variable) => Some(global)
       case End                     => Some(global)
       // recursive cases //
-      case RecursionFixedPoint(variable, globalB) => Some(RecursionFixedPoint(variable, projection(globalB, role).get))
-      case Sequence(globalA, globalB) => Some(Sequence(projection(globalA, role).get, projection(globalB, role).get))
-      case Parallel(globalA, globalB) => Some(Parallel(projection(globalA, role).get, projection(globalB, role).get))
-      case Choice  (globalA, globalB) => Some(Choice  (projection(globalA, role).get, projection(globalB, role).get))
+      case RecursionFixedPoint(variable, globalB) =>
+        val maybeLocalB: Option[Protocol] = projection(globalB)
+        maybeLocalB match
+          // may be too restrictive but allows projection's correctness //
+          case Some(RecursionCall(variable)) => None
+          case None                          => None
+          case Some(localB)                  => Some(RecursionFixedPoint(variable, localB))
+      case Sequence(globalA, globalB) =>
+        val maybeLocalA: Option[Protocol] = projection(globalA)
+        val maybeLocalB: Option[Protocol] = projection(globalB)
+         maybeLocalA -> maybeLocalB match
+          case Some(localA) -> Some(localB) => Some(Sequence(localA, localB))
+          case Some(localA) -> None         => Some(localA)
+          case None -> Some(localB)         => Some(localB)
+          case None -> None                 => None
+      case Parallel(globalA, globalB) =>
+        val maybeLocalA: Option[Protocol] = projection(globalA)
+        val maybeLocalB: Option[Protocol] = projection(globalB)
+        maybeLocalA -> maybeLocalB match
+          case Some(localA) -> Some(localB) => Some(Parallel(localA, localB))
+          case Some(localA) -> None         => Some(localA)
+          case None -> Some(localB)         => Some(localB)
+          case None -> None                 => None
+      case Choice  (globalA, globalB) =>
+        val maybeLocalA: Option[Protocol] = projection(globalA)
+        val maybeLocalB: Option[Protocol] = projection(globalB)
+        maybeLocalA -> maybeLocalB match
+          case Some(localA) -> Some(localB) if localA == localB => Some(localA)
+          case Some(localA) -> Some(localB) => Some(Choice(localA, localB))
+          case Some(localA) -> None         => Some(localA)
+          case None -> Some(localB)         => Some(localB)
+          case None -> None                 => None
       // unexpected cases //
-      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
-      case local => None
+      case _ => None
   end projection
 
-  def apply(global: Protocol, role: String): Protocol = Protocol(projection(global, role).get)
+  def apply(role: String, global: Protocol): Protocol =
+    val maybeLocal: Option[Protocol] = projection(global)(using role)
+    maybeLocal match
+      case Some(local) => local
+      case None        => throw new RuntimeException("PROJECTION REJECTED\n")
+  end apply
 end Projection

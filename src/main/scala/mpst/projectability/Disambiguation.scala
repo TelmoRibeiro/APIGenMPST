@@ -12,8 +12,8 @@ object Disambiguation:
     then isStillProjectable
     else
       val role: String               = roles.head
-      val headGlobalA: Set[Protocol] = headInteraction(globalA, role)
-      val headGlobalB: Set[Protocol] = headInteraction(globalB, role)
+      val headGlobalA: Set[Protocol] = headInteraction(globalA)(using role)
+      val headGlobalB: Set[Protocol] = headInteraction(globalB)(using role)
       val isProjectable: Boolean     = (headGlobalA intersect headGlobalB).isEmpty
       roleDisambiguation(globalA, globalB, roles - role, isStillProjectable && isProjectable)
   end roleDisambiguation
@@ -30,7 +30,6 @@ object Disambiguation:
       case Parallel(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
       case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, roles(global))
       // unexpected cases //
-      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end disambiguation
 

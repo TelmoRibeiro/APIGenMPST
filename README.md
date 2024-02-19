@@ -13,13 +13,13 @@ sbt run
 ___
 
 ### To Do:
-1) Merge Well-Formedness Definitions (**Better Performance**)
-2) Fix Projections
-3) Develop Show (**pretty print**)
-4) Extend example's list
-5) Try to tail-recurse most functions
-6) Optimize binary to limitless
-
+1) Fix Projection
+2) Relax WSFI Semantic
+3) Merge Projectability Definitions (**Better Performance**)
+4) Develop Show (**pretty print**)
+5) Extend example's list
+6) Try to tail-recurse most functions
+7) Optimize binary to limitless
 ___
 
 ### Notes:
@@ -29,8 +29,4 @@ ___
 > x : S => interaction variable (x) of sort (S)  
 > A     => assertion  
 > example: C>A:Login(x: string){tt}  
-
-___ 
-
-### Questions:
-- are there non-reachable states?
+___

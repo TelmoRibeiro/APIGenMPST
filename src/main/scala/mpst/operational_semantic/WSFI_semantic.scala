@@ -18,7 +18,6 @@ object WSFI_semantic:
       case Parallel(localA, localB) => accept(localA) && accept(localB)
       case   Choice(localA, localB) => accept(localA) || accept(localB)
       // unexpected cases //
-      case Skip   => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case global => throw new RuntimeException(s"unexpected global type $global found\n")
   end accept
 
@@ -71,7 +70,6 @@ object WSFI_semantic:
         val nextListB: List[(Action,State)] = reduce(environment, localB)
         nextListA ++ nextListB
       // unexpected cases //
-      case   Skip => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case global => throw new RuntimeException(s"unexpected global type $global found\n")
   end reduce
 end WSFI_semantic

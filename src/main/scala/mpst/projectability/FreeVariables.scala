@@ -19,7 +19,6 @@ object FreeVariables:
       case Parallel(globalA, globalB)  => freeVariables(Set(), globalA)     && freeVariables(Set(), globalB)
       case Choice  (globalA, globalB)  => freeVariables(variables, globalA) && freeVariables(variables, globalB)
       // unexpected cases //
-      case Skip  => throw new RuntimeException("unexpected case of \"Skip\"\n")
       case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end freeVariables
 
