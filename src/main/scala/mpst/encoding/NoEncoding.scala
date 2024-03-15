@@ -1,8 +1,8 @@
 package mpst.encoding
 
+import mpst.operational_semantic.local_semantic.WSFI_semantic
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.operational_semantic.WSFI_semantic
 
 object NoEncoding:
   // lazy implementation to traverse the semantic output //

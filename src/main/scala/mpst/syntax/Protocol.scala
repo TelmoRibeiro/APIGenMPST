@@ -1,6 +1,9 @@
 package mpst.syntax
 
+import mpst.utilities.Simplifier
+
 import scala.annotation.tailrec
+
 
 enum Protocol:
   // Global Types //
@@ -18,32 +21,30 @@ enum Protocol:
 end Protocol
 
 object Protocol:
-  // semantic definitions //
   type Action = Protocol
   type State  = (Map[String,Protocol],Protocol)
-  // semantic definitions //
 
   def roles(protocol: Protocol): Set[String] =
     protocol match
       // terminal cases //
       case Interaction(agentA, agentB, _) => (Set() + agentA) + agentB
-      case Send       (agentA, agentB, _) => (Set() + agentA) + agentB
-      case Receive    (agentA, agentB, _) => (Set() + agentA) + agentB
+      case        Send(agentA, agentB, _) => (Set() + agentA) + agentB
+      case     Receive(agentA, agentB, _) => (Set() + agentA) + agentB
       case RecursionCall(_)               =>  Set()
       case End                            =>  Set()
       // recursive cases //
       case RecursionFixedPoint(_, protocolB) => roles(protocolB)
-      case Sequence(protocolA, protocolB)    => roles(protocolA) ++ roles(protocolB)
-      case Parallel(protocolA, protocolB)    => roles(protocolA) ++ roles(protocolB)
-      case Choice  (protocolA, protocolB)    => roles(protocolA) ++ roles(protocolB)
+      case    Sequence(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
+      case    Parallel(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
+      case      Choice(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
   end roles
 
   def headInteraction(global: Protocol)(using role: String): Set[Protocol] =
     global match
       // terminal cases //
       case Interaction(agentA, agentB, message) =>
-        if   role != agentA && role != agentB
-        then Set()
+        if role != agentA && role != agentB 
+        then Set() 
         else Set() + Interaction(agentA, agentB, message)
       case RecursionCall(_) => Set()
       case End              => Set()
@@ -92,7 +93,7 @@ object Protocol:
         // unexpected cases //
         case global => throw new RuntimeException(s"unexpected global type $global found\n")
     end removeRecursionAuxiliary
-    Protocol(removeRecursionAuxiliary(local)(using recursionVariable))
+    Simplifier(removeRecursionAuxiliary(local)(using recursionVariable))
   end removeRecursion
 
   def removeLabel(label: Protocol, local: Protocol): Protocol =
@@ -115,42 +116,6 @@ object Protocol:
         // unexpected cases //
         case global => throw new RuntimeException(s"unexpected global type $global found\n")
     end removeLabelAuxiliary
-    Protocol(removeLabelAuxiliary(label, local))
+    Simplifier(removeLabelAuxiliary(label, local))
   end removeLabel
-
-  private def cleanOnce(protocol: Protocol): Protocol =
-    protocol match
-      // associate ";", "||" and "+" //
-      case Sequence(Sequence(protocolA, protocolB), protocolC) => cleanOnce(Sequence(protocolA, Sequence(protocolB, protocolC)))
-      case Parallel(Parallel(protocolA, protocolB), protocolC) => cleanOnce(Parallel(protocolA, Parallel(protocolB, protocolC)))
-      case Choice  (Choice  (protocolA, protocolB), protocolC) => cleanOnce(Choice(protocolA,   Choice  (protocolB, protocolC)))
-      // propagate "End"
-      case Sequence(End, protocolB)     => cleanOnce(protocolB)
-      case Parallel(End, protocolB)     => cleanOnce(protocolB)
-      case Parallel(protocolA, End)     => cleanOnce(protocolA)
-      case Choice  (End, protocolB)     => cleanOnce(protocolB)
-      case Choice  (protocolA, End)     => cleanOnce(protocolA)
-      case RecursionFixedPoint(_, End)  => End
-      // recursive cases //
-      case RecursionFixedPoint(variableA, RecursionCall(variableB)) if variableA == variableB => End
-      case RecursionFixedPoint(variable, protocolB) => RecursionFixedPoint(variable, cleanOnce(protocolB))
-      case Sequence(protocolA, protocolB) => Sequence(cleanOnce(protocolA), cleanOnce(protocolB))
-      case Parallel(protocolA, protocolB) => Parallel(cleanOnce(protocolA), cleanOnce(protocolB))
-      case Choice  (protocolA, protocolB) if protocolA == protocolB => cleanOnce(protocolA)
-      case Choice  (protocolA, protocolB) =>   Choice(cleanOnce(protocolA), cleanOnce(protocolB))
-      // terminal cases //
-      case End  => End
-      case RecursionCall(variable) => RecursionCall(variable)
-      case Interaction(agentA, agentB, message) => Interaction(agentA, agentB, message)
-      case Send   (agentA, agentB, message)     => Send   (agentA, agentB, message)
-      case Receive(agentA, agentB, message)     => Receive(agentA, agentB, message)
-  end cleanOnce
-
-  @tailrec
-  private def clean(protocol: Protocol): Protocol =
-    val cleanProtocol: Protocol = cleanOnce(protocol)
-    if  cleanProtocol == protocol then protocol else clean(cleanProtocol)
-  end clean
-
-  def apply(protocol: Protocol): Protocol = clean(protocol)
 end Protocol

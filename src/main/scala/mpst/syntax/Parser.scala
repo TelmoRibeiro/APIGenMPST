@@ -1,9 +1,10 @@
 package mpst.syntax
 
+import mpst.syntax.Protocol.*
+import mpst.utilities.Simplifier
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 
-import mpst.syntax.Protocol._
 
 object Parser extends RegexParsers:
   override val whiteSpace: Regex = "( |\t|\r|\f|\n|//.*)+".r
@@ -59,8 +60,8 @@ object Parser extends RegexParsers:
   private def atomGlobalType: Parser[Protocol] = recursionFixedPoint | literal | recursionCall
 
   private def recursionFixedPoint: Parser[Protocol] =
-    "rec" ~ identifier ~ ";" ~ globalType ^^ {
-      case "rec" ~ recursionVariable ~ ";" ~ globalSyntax => RecursionFixedPoint(recursionVariable, globalSyntax)
+    "def" ~ identifier ~ "in" ~ globalType ^^ {
+      case "def" ~ recursionVariable ~ "in" ~ globalSyntax => RecursionFixedPoint(recursionVariable, globalSyntax)
       case _ ~ _ ~ _ ~ _                                  => throw new RuntimeException("BAD SYNTAX")
     }
   end recursionFixedPoint
@@ -81,7 +82,7 @@ object Parser extends RegexParsers:
 
   def apply(input: String): Protocol =
     parseAll(globalType, input) match
-      case Success(global, _) => Protocol(global)
+      case Success(global, _) => Simplifier(global)
       case _                  => throw new RuntimeException(s"PARSING FAILED!\n")
   end apply
 end Parser

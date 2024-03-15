@@ -1,7 +1,8 @@
-package mpst.operational_semantic
+package mpst.operational_semantic.local_semantic
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.utilities.Simplifier
 
 // Strict Sequencing Free Interleaving - SSFI //
 object SSFI_semantic:
@@ -41,7 +42,7 @@ object SSFI_semantic:
         val nextListB: List[(Action,State)] = reduce(environment, localB)
         val   resultA: List[(Action,State)] =
           for   nextActionA -> (nextEnvironmentA -> nextLocalA) <- nextListA
-          yield nextActionA -> (nextEnvironmentA -> Protocol(Sequence(nextLocalA, localB)))
+          yield nextActionA -> (nextEnvironmentA -> Simplifier(Sequence(nextLocalA, localB)))
         val   resultB: List[(Action,State)] =
           if accept(localA) then nextListB else Nil
         resultA ++ resultB
@@ -50,10 +51,10 @@ object SSFI_semantic:
         val nextListB: List[(Action,State)] = reduce(environment, localB)
         val   resultA: List[(Action,State)] =
           for   nextActionA -> (nextEnvironmentA -> nextLocalA) <- nextListA
-          yield nextActionA -> (nextEnvironmentA -> Protocol(Parallel(nextLocalA, localB)))
+          yield nextActionA -> (nextEnvironmentA -> Simplifier(Parallel(nextLocalA, localB)))
         val   resultB: List[(Action,State)] =
           for   nextActionB -> (nextEnvironmentB -> nextLocalB) <- nextListB
-          yield nextActionB -> (nextEnvironmentB -> Protocol(Parallel(localA, nextLocalB)))
+          yield nextActionB -> (nextEnvironmentB -> Simplifier(Parallel(localA, nextLocalB)))
         resultA ++ resultB
       case   Choice(localA, localB) =>
         val nextListA: List[(Action,State)] = reduce(environment, localA)

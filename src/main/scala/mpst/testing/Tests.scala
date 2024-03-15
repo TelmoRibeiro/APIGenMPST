@@ -17,20 +17,20 @@ object Tests:
       ("FREE VARIABLES LIST",
         List (  
           // Expected Output: rejected - Y   belongs to FVs //
-          "rec X ; (m>wA:Work || m>wB:Done) ; Y",
+          "def X in (m>wA:Work || m>wB:Done) ; Y",
           // Expected Output: rejected - X   belongs to FVs //
           "(m>wA:Work || m>wB:Work) ; X",
           // Expected Output: rejected - X_2 belongs to FVs //
-          "rec X ; (m>wA:Work || m>wB:Work) ; X ; X",
+          "def X in (m>wA:Work || m>wB:Work) ; X ; X",
         )),
       ("RACE CONDITIONS",
         List (
           // Expected Output: rejected - possible race condition //
-          "rec X ; (m>wA:Work ; X  || m>wB:Work ; X)",
+          "def X in (m>wA:Work ; X  || m>wB:Work ; X)",
           // Expected Output: accepted //
-          "rec X ; (m>wA:Work || m>wB:Work) ; X",
+          "def X in (m>wA:Work || m>wB:Work) ; X",
           // Expected Output: accepted //
-          "(rec X ; m>wA:Work ; X) || (rec Y ; m>wB:Work ; Y)",
+          "(def X in m>wA:Work ; X) || (def Y in m>wB:Work ; Y)",
         )),
       ("DISAMBIGUATION",
         List (
