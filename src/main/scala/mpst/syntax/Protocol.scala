@@ -2,8 +2,6 @@ package mpst.syntax
 
 import mpst.utilities.Simplifier
 
-import scala.annotation.tailrec
-
 
 enum Protocol:
   // Global Types //
@@ -43,8 +41,8 @@ object Protocol:
     global match
       // terminal cases //
       case Interaction(agentA, agentB, message) =>
-        if role != agentA && role != agentB 
-        then Set() 
+        if role != agentA && role != agentB
+        then Set()
         else Set() + Interaction(agentA, agentB, message)
       case RecursionCall(_) => Set()
       case End              => Set()
