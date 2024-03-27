@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/APIGenMPST.iml" filepath="$PROJECT_DIR$/.idea/modules/APIGenMPST.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/APIGenMPST-build.iml" filepath="$PROJECT_DIR$/.idea/modules/APIGenMPST-build.iml" />
     </modules>
   </component>
 </project>
