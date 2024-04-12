@@ -1,12 +1,12 @@
 package mpst.encoding
 
-import mpst.operational_semantic.local_semantic.WSFI_semantic
+import mpst.operational_semantic.local_semantic.SyncSemantic
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
 
 object NoEncoding:
   // lazy implementation to traverse the semantic output //
-  private def lazyTraverse(nextReductions: List[(Action,State)], visitedReductions: Set[(Action,State)]): Unit =
+  private def lazyTraverse(nextReductions: Set[(Action,State)], visitedReductions: Set[(Action,State)]): Unit =
     if nextReductions.isEmpty then
       println("done traversing")
       return
@@ -19,9 +19,9 @@ object NoEncoding:
       lazyTraverse(nextReductions.tail, visitedReductions)
       return
     println()
-    val  children = WSFI_semantic.reduce(reductionEnvironment, reductionLocal)
+    val  children = SyncSemantic.reduce(reductionEnvironment, reductionLocal)
     lazyTraverse(children ++ nextReductions.tail, visitedReductions + nextReductions.head)
   end lazyTraverse
 
-  def apply(local: Protocol): Unit = lazyTraverse(WSFI_semantic.reduce(Map(), local), Set())
+  def apply(local: Protocol): Unit = lazyTraverse(SyncSemantic.reduce(Map() -> local), Set())
 end NoEncoding

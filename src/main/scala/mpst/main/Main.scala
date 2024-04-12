@@ -1,5 +1,6 @@
 package mpst.main
 
+import mpst.operational_semantic.local_semantic.SyncSemantic
 import mpst.syntax.{Parser, Protocol}
 import mpst.syntax.Protocol.*
 import mpst.projectability.Projectability
@@ -35,9 +36,7 @@ object Main:
     then println(s"PROJECTION REJECTED!")
     else for role <- Protocol.roles(global) yield
       val local = Projection(role, global)
-      val state:State = Map() -> local
-      states = states + state
       println(s"LOCAL TYPE ($role): $local")
-      // reductions(SSFI_semantic.reduce(Map(), local), Nil)
+      println(SyncSemantic.reduce(Map() -> local))
   end main
 end Main

@@ -3,7 +3,7 @@ package mpst.web_animator
 import mpst.syntax.{Protocol, Parser}
 import mpst.syntax.Protocol._
 import mpst.projection.Projection
-import mpst.operational_semantic.local_semantic.SSFI_semantic
+import mpst.operational_semantic.local_semantic.SyncSemantic
 import org.scalajs.dom
 import org.scalajs.dom.document
 import org.scalajs.dom.html
@@ -12,7 +12,7 @@ import org.scalajs.dom.html
 object Main:
   private def reduce(reductions: List[(Action,State)], reductionIndex: Int): Unit =
     val action -> (environment -> local) = reductions(reductionIndex)
-    val nextReductions = SSFI_semantic.reduce(environment, local)
+    val nextReductions = SyncSemantic.reduce(environment, local)
     for action -> state <- nextReductions yield println(s"$action : $state")
     readAction(nextReductions)
   end reduce
@@ -30,7 +30,7 @@ object Main:
     val local: Protocol = Projection(role, global)
     println(s"LOCAL ($role): $local")
     // allow for semantic picking //
-    val reductions: List[(Action,State)] = SSFI_semantic.reduce(Map(), local)
+    val reductions: List[(Action,State)] = SyncSemantic.reduce(Map(), local)
     for action -> state <- reductions yield println(s"$action : $state")
     readAction(reductions)
   end processRole
