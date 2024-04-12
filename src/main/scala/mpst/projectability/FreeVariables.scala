@@ -7,7 +7,7 @@ object FreeVariables:
   private def freeVariables(variables: Set[String], global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction  (_, _, _)  => true
+      case Interaction  (_, _, _, _)  => true
       case RecursionCall(variable) => variables.contains(variable)
       case End                     => true
       // recursive cases //

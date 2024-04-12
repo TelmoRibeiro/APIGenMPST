@@ -21,9 +21,9 @@ object Disambiguation:
   private def disambiguation(global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction  (_, _, _) => true
-      case RecursionCall(_)       => true
-      case End                    => true
+      case Interaction  (_, _, _, _) => true
+      case RecursionCall(_) => true
+      case End              => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => disambiguation(globalB)
       case Sequence(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)

@@ -7,9 +7,9 @@ object Linearity:
   private def linearity(global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction(_, _, _) => true
-      case RecursionCall(_)     => true
-      case End                  => true
+      case Interaction(_, _, _, _) => true
+      case RecursionCall(_) => true
+      case End              => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => linearity(globalB)
       case Sequence(globalA, globalB)      => linearity(globalA) && linearity(globalB)

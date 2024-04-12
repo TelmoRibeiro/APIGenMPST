@@ -4,18 +4,16 @@ import mpst.utilities.Simplifier
 
 
 enum Protocol:
-  // Global Types //
-  case Interaction(agentA: String, agentB: String, message: String) // agentA>agentB:message
-  case RecursionFixedPoint(variable: String, protocolB: Protocol)   // μX ; G   | μX ; L
-  case RecursionCall(variable: String)                              // X
-  case Sequence(protocolA: Protocol, protocolB: Protocol)           // GA ;  GB | LA ;  LB
-  case Parallel(protocolA: Protocol, protocolB: Protocol)           // GA || GB | LA || LB
-  case Choice  (protocolA: Protocol, protocolB: Protocol)           // GA +  GB | LA +  LB
-  // Local Types //
-  case Send   (agentA: String, agentB: String, message: String)     // agentAagentB!message
-  case Receive(agentA: String, agentB: String, message: String)     // agentAagentB?message
-  // Internal //
-  case End                                                          // 0
+  case Interaction(agentA: String, agentB: String, message: String, sort: String)
+  // case Multicast(agentA: String, agentB: List[String], message: List[String]) // @ telmo - extend this!
+  case RecursionFixedPoint(variable: String, protocolB: Protocol)
+  case RecursionCall(variable: String)
+  case Sequence(protocolA: Protocol, protocolB: Protocol)
+  case Parallel(protocolA: Protocol, protocolB: Protocol)
+  case Choice  (protocolA: Protocol, protocolB: Protocol)
+  case Send   (agentA: String, agentB: String, message: String, sort: String)
+  case Receive(agentA: String, agentB: String, message: String, sort: String)
+  case End
 end Protocol
 
 object Protocol:
@@ -25,25 +23,25 @@ object Protocol:
   def roles(protocol: Protocol): Set[String] =
     protocol match
       // terminal cases //
-      case Interaction(agentA, agentB, _) => (Set() + agentA) + agentB
-      case        Send(agentA, agentB, _) => (Set() + agentA) + agentB
-      case     Receive(agentA, agentB, _) => (Set() + agentA) + agentB
-      case RecursionCall(_)               =>  Set()
-      case End                            =>  Set()
+      case Interaction(agentA, agentB, _, _) => (Set() + agentA) + agentB
+      case Send   (agentA, agentB, _, _) => (Set() + agentA) + agentB
+      case Receive(agentA, agentB, _, _) => (Set() + agentA) + agentB
+      case RecursionCall(_) =>  Set()
+      case End              =>  Set()
       // recursive cases //
       case RecursionFixedPoint(_, protocolB) => roles(protocolB)
-      case    Sequence(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
-      case    Parallel(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
-      case      Choice(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
+      case Sequence(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
+      case Parallel(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
+      case Choice  (protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
   end roles
 
   def headInteraction(global: Protocol)(using role: String): Set[Protocol] =
     global match
       // terminal cases //
-      case Interaction(agentA, agentB, message) =>
+      case Interaction(agentA, agentB, message, sort) =>
         if role != agentA && role != agentB
         then Set()
-        else Set() + Interaction(agentA, agentB, message)
+        else Set() + global
       case RecursionCall(_) => Set()
       case End              => Set()
       // recursive cases //
@@ -63,7 +61,7 @@ object Protocol:
   def interactions(global: Protocol): Set[Protocol] =
     global match
       // terminal cases //
-      case Interaction(agentA, agentB, message) => Set() + Interaction(agentA, agentB, message)
+      case Interaction(agentA, agentB, message, sort) => Set() + global
       case RecursionCall(_) => Set()
       case End              => Set()
       // recursive cases //
@@ -79,8 +77,8 @@ object Protocol:
     def removeRecursionAuxiliary(local: Protocol)(using recursionVariable: String): Protocol =
       local match
         // terminal cases //
-        case    Send(agentA, agentB, message) => local
-        case Receive(agentA, agentB, message) => local
+        case Send   (agentA, agentB, message, sort) => local
+        case Receive(agentA, agentB, message, sort) => local
         case RecursionCall(variable) => if variable == recursionVariable then End else local
         case End => local
         // recursive cases //
@@ -98,8 +96,8 @@ object Protocol:
     def removeLabelAuxiliary(label: Protocol, local: Protocol): Protocol =
       local match
         // terminal cases //
-        case    Send(agentA, agentB, message) => if label ==    Send(agentA, agentB, message) then End else local
-        case Receive(agentA, agentB, message) => if label == Receive(agentA, agentB, message) then End else local
+        case Send   (agentA, agentB, message, sort) => if label == local then End else local
+        case Receive(agentA, agentB, message, sort) => if label == local then End else local
         case RecursionCall(variable) => local
         case End                     => local
         // recursive cases //
@@ -110,7 +108,7 @@ object Protocol:
           then Sequence(localA, removeLabelAuxiliary(label, localB))
           else Sequence(newLocalA, localB)
         case Parallel(localA, localB) => Parallel(removeLabelAuxiliary(label, localA), removeLabelAuxiliary(label, localB))
-        case   Choice(localA, localB) =>   Choice(removeLabelAuxiliary(label, localA), removeLabelAuxiliary(label, localB))
+        case Choice  (localA, localB) =>   Choice(removeLabelAuxiliary(label, localA), removeLabelAuxiliary(label, localB))
         // unexpected cases //
         case global => throw new RuntimeException(s"unexpected global type $global found\n")
     end removeLabelAuxiliary

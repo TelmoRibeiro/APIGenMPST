@@ -56,7 +56,7 @@ object Parser extends RegexParsers:
       case _ ~ _ ~ _                                         => throw new RuntimeException("BAD SYNTAX")
     }
   end sequence
-  
+
   private def atomGlobalType: Parser[Protocol] = recursionFixedPoint | literal | recursionCall
 
   private def recursionFixedPoint: Parser[Protocol] =
@@ -73,8 +73,8 @@ object Parser extends RegexParsers:
   private def parentheses: Parser[Protocol] = "(" ~> globalType <~ ")"
 
   private def message: Parser[Protocol] =
-    identifier ~ ">" ~ identifier ~ ":" ~ identifier ^^ {
-      case agentA ~ ">" ~ agentB ~ ":" ~ message => Interaction(agentA, agentB, message)
+    identifier ~ ">" ~ identifier ~ ":" ~ identifier ~ "<" ~ identifier ~ ">" ^^ {
+      case agentA ~ ">" ~ agentB ~ ":" ~ message ~ "<" ~ sort ~ ">" => Interaction(agentA, agentB, message, sort)
     }
   end message
 

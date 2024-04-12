@@ -3,13 +3,14 @@ package mpst.projection
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
 
+
 object Projection:
   private def projection(global: Protocol)(using role: String): Option[Protocol] =
     global match
       // terminal cases //
-      case Interaction(agentA, agentB, message) =>
-        if      role == agentA then Some(   Send(agentA, agentB, message))
-        else if role == agentB then Some(Receive(agentB, agentA, message))
+      case Interaction(agentA, agentB, message, sort) =>
+        if      role == agentA then Some(Send   (agentA, agentB, message, sort))
+        else if role == agentB then Some(Receive(agentB, agentA, message, sort))
         else    None
       case RecursionCall(variable) => Some(global)
       case End                     => Some(global)

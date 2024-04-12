@@ -30,9 +30,9 @@ object Simplifier:
       // terminal cases //
       case End => End
       case RecursionCall(variable) => RecursionCall(variable)
-      case Interaction(agentA, agentB, message) => Interaction(agentA, agentB, message)
-      case Send   (agentA, agentB, message) => Send(agentA, agentB, message)
-      case Receive(agentA, agentB, message) => Receive(agentA, agentB, message)
+      case Interaction(agentA, agentB, message, sort) => Interaction(agentA, agentB, message, sort)
+      case Send   (agentA, agentB, message, sort) => Send   (agentA, agentB, message, sort)
+      case Receive(agentA, agentB, message, sort) => Receive(agentA, agentB, message, sort)
   end simplifyOnce
 
   @tailrec

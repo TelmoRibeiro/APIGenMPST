@@ -7,9 +7,9 @@ object SelfCommunication:
   private def selfCommunication(global: Protocol): Boolean =
     global match
       // terminal cases //
-      case Interaction  (agentA, agentB, _) => agentA != agentB
-      case RecursionCall(_)                 => true
-      case End                              => true
+      case Interaction(agentA, agentB, _, _) => agentA != agentB
+      case RecursionCall(_) => true
+      case End              => true
       // recursive cases //
       case RecursionFixedPoint(_, globalB) => selfCommunication(globalB)
       case Sequence(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)

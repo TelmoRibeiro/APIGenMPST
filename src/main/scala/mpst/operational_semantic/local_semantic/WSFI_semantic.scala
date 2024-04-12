@@ -9,10 +9,10 @@ object WSFI_semantic:
   private def accept(local: Protocol): Boolean =
     local match
       // terminal cases //
-      case    Send(agentA, agentB, message) => false
-      case Receive(agentA, agentB, message) => false
-      case RecursionCall(_)                 => false
-      case End                              => true
+      case    Send(agentA, agentB, message, sort) => false
+      case Receive(agentA, agentB, message, sort) => false
+      case RecursionCall(_) => false
+      case End              => true
       // recursive cases //
       case RecursionFixedPoint(_, localB) => accept(localB)
       case Sequence(localA, localB) => accept(localA) && accept(localB)
@@ -25,11 +25,11 @@ object WSFI_semantic:
   def reduce(environment: Map[String,Protocol], local: Protocol)(using conflictingRoles: Set[String] = Set()): List[(Action, State)] =
     local match
       // terminal cases //
-      case    Send(agentA, agentB, message) =>
+      case Send(agentA, agentB, message, sort) =>
         if   (conflictingRoles contains agentA) || (conflictingRoles contains agentB)
         then Nil
         else List(local -> (environment -> End))
-      case Receive(agentA, agentB, message) =>
+      case Receive(agentA, agentB, message, sort) =>
         if   (conflictingRoles contains agentA) || (conflictingRoles contains agentB)
         then Nil
         else List(local -> (environment -> End))
