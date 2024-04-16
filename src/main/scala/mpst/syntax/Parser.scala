@@ -1,7 +1,6 @@
 package mpst.syntax
 
 import mpst.syntax.Protocol.*
-import mpst.utilities.Simplifier
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 
@@ -82,7 +81,7 @@ object Parser extends RegexParsers:
 
   def apply(input: String): Protocol =
     parseAll(globalType, input) match
-      case Success(global, _) => Simplifier(global)
-      case _                  => throw new RuntimeException(s"PARSING FAILED!\n")
+      case Success(global, _) => global
+      case _                  => throw new RuntimeException(s"parsing failed\n")
   end apply
 end Parser

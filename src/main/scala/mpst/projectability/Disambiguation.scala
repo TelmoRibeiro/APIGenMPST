@@ -28,7 +28,7 @@ object Disambiguation:
       case RecursionFixedPoint(_, globalB) => disambiguation(globalB)
       case Sequence(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
       case Parallel(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
-      case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, roles(global))
+      case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, getAgents(global))
       // unexpected cases //
       case local => throw new RuntimeException(s"unexpected local type $local found\n")
   end disambiguation

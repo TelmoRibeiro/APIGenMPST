@@ -2,19 +2,26 @@ package mpst.projection
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.utilities.Simplifier
+import mpst.utilities.Types.*
 
 
 object Projection:
-  private def projection(global: Protocol)(using role: String): Option[Protocol] =
+  def projectionWithAgent(global:Protocol):Set[(Agent,Protocol)] =
+    val agents = getAgents(global)
+    for agent <- agents yield
+      val local = apply(agent, global)
+      agent -> local
+  end projectionWithAgent
+
+  def projection(global:Protocol)(using agent:Agent):Option[Protocol] =
     global match
-      // terminal cases //
-      case Interaction(agentA, agentB, message, sort) =>
-        if      role == agentA then Some(Send   (agentA, agentB, message, sort))
-        else if role == agentB then Some(Receive(agentB, agentA, message, sort))
+      case Interaction(agentA,agentB,message,sort) =>
+        if      agent == agentA then Some(Send   (agentA,agentB,message,sort))
+        else if agent == agentB then Some(Receive(agentB,agentA,message,sort))
         else    None
       case RecursionCall(variable) => Some(global)
-      case End                     => Some(global)
-      // recursive cases //
+      case End => Some(global)
       case RecursionFixedPoint(variable, globalB) =>
         val maybeLocalB: Option[Protocol] = projection(globalB)
         maybeLocalB match
@@ -54,7 +61,7 @@ object Projection:
   def apply(role: String, global: Protocol): Protocol =
     val maybeLocal: Option[Protocol] = projection(global)(using role)
     maybeLocal match
-      case Some(local) => local
-      case None        => throw new RuntimeException("PROJECTION REJECTED\n")
+      case Some(local) => Simplifier(local)
+      case None        => throw new RuntimeException(s"could not project global type in $global\n")
   end apply
 end Projection

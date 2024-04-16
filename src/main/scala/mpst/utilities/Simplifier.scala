@@ -17,8 +17,8 @@ object Simplifier:
       case Sequence(End, protocolB) => simplifyOnce(protocolB)
       case Parallel(End, protocolB) => simplifyOnce(protocolB)
       case Parallel(protocolA, End) => simplifyOnce(protocolA)
-      case Choice  (End, protocolB) => simplifyOnce(protocolB)
-      case Choice  (protocolA, End) => simplifyOnce(protocolA)
+      // case Choice  (End, protocolB) => simplifyOnce(protocolB)
+      // case Choice  (protocolA, End) => simplifyOnce(protocolA)
       case RecursionFixedPoint(_, End) => End
       // recursive cases //
       case Sequence(protocolA, protocolB) => Sequence(simplifyOnce(protocolA), simplifyOnce(protocolB))

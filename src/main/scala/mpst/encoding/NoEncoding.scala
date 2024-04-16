@@ -1,8 +1,8 @@
 package mpst.encoding
 
-import mpst.operational_semantic.local_semantic.SyncSemantic
+import mpst.operational_semantic.local_semantic.SSSemantic
 import mpst.syntax.Protocol
-import mpst.syntax.Protocol.*
+import mpst.utilities.Types.*
 
 object NoEncoding:
   // lazy implementation to traverse the semantic output //
@@ -19,9 +19,9 @@ object NoEncoding:
       lazyTraverse(nextReductions.tail, visitedReductions)
       return
     println()
-    val  children = SyncSemantic.reduce(reductionEnvironment, reductionLocal)
+    val  children = SSSemantic.reduceState(reductionEnvironment -> reductionLocal)
     lazyTraverse(children ++ nextReductions.tail, visitedReductions + nextReductions.head)
   end lazyTraverse
 
-  def apply(local: Protocol): Unit = lazyTraverse(SyncSemantic.reduce(Map() -> local), Set())
+  def apply(local: Protocol): Unit = lazyTraverse(SSSemantic.reduceState(Map() -> local), Set())
 end NoEncoding

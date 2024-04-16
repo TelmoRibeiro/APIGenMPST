@@ -1,6 +1,7 @@
 package mpst.syntax
 
 import mpst.utilities.Simplifier
+import mpst.utilities.Types.*
 
 
 enum Protocol:
@@ -17,23 +18,20 @@ enum Protocol:
 end Protocol
 
 object Protocol:
-  type Action = Protocol
-  type State  = (Map[String,Protocol],Protocol)
-
-  def roles(protocol: Protocol): Set[String] =
+  // extend to LocalProtocol and GlobalProtocol
+  def getAgents(protocol:Protocol):Set[Agent] =
     protocol match
-      // terminal cases //
-      case Interaction(agentA, agentB, _, _) => (Set() + agentA) + agentB
-      case Send   (agentA, agentB, _, _) => (Set() + agentA) + agentB
-      case Receive(agentA, agentB, _, _) => (Set() + agentA) + agentB
-      case RecursionCall(_) =>  Set()
-      case End              =>  Set()
+      case Interaction(agentA,agentB,_,_) => (Set() + agentA) + agentB
+      case Send   (agentA, agentB, _, _)  => (Set() + agentA) + agentB
+      case Receive(agentA, agentB, _, _)  => (Set() + agentA) + agentB
+      case RecursionCall(_) => Set()
+      case End => Set()
       // recursive cases //
-      case RecursionFixedPoint(_, protocolB) => roles(protocolB)
-      case Sequence(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
-      case Parallel(protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
-      case Choice  (protocolA, protocolB) => roles(protocolA) ++ roles(protocolB)
-  end roles
+      case Sequence(protocolA, protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
+      case Parallel(protocolA, protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
+      case Choice  (protocolA, protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
+      case RecursionFixedPoint(_, protocolB) => getAgents(protocolB)
+  end getAgents
 
   def headInteraction(global: Protocol)(using role: String): Set[Protocol] =
     global match
