@@ -8,8 +8,16 @@ import mpst.syntax.Protocol.*
 import mpst.utilities.Environment
 import mpst.utilities.Types.*
 
+/* IDEA:
 
-// @ telmo - ADD BETTER ERROR HANDLING //
+  @ telmo -
+    add better error handling and expand it for every error
+    ASSUMES AS INPUT THE WHOLE ORIGINAL GLOBAL TYPE
+      in order to reduce I need the environment
+      in order to get the environment I need every X -> GlobalBit in "def X in (GlobalBit)"
+      can I safely assume a X -> Something?
+*/
+
 object WellBranched:
   private def isWellBranched(global:Protocol)(using environment:Map[String,Protocol]):Boolean =
     global match
@@ -20,7 +28,7 @@ object WellBranched:
       case Parallel(globalA,globalB) => isWellBranched(globalA) && isWellBranched(globalB)
       case Choice  (globalA,globalB) => checkWellBranched(globalA,globalB) && isWellBranched(globalA) && isWellBranched(globalB)
       case RecursionFixedPoint(_,globalB) => isWellBranched(globalB)
-      case local => throw new RuntimeException(s"unexpected local type found in $local")
+      case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isWellBranched
 
   private def checkWellBranched(globalA:Protocol, globalB:Protocol)(using environment:Map[Variable,Protocol]):Boolean =
@@ -66,8 +74,43 @@ object WellBranched:
     yield agent -> message
   end receivingActions
 
-  // @ telmo - ASSUMING THE ORIGINAL PROTOCOL //
   def apply(global:Protocol):Boolean =
     val environment = Environment.getEnvironment(global)(using Map())
     isWellBranched(global)(using environment)
 end WellBranched
+
+/*
+  @ telmo -
+  previous implementation
+
+object Disambiguation:
+  @tailrec
+  private def roleDisambiguation(globalA: Protocol, globalB: Protocol, roles: Set[String], isStillProjectable: Boolean = true): Boolean =
+    if   roles.isEmpty
+    then isStillProjectable
+    else
+      val role: String               = roles.head
+      val headGlobalA: Set[Protocol] = headInteraction(globalA)(using role)
+      val headGlobalB: Set[Protocol] = headInteraction(globalB)(using role)
+      val isProjectable: Boolean     = (headGlobalA intersect headGlobalB).isEmpty
+      roleDisambiguation(globalA, globalB, roles - role, isStillProjectable && isProjectable)
+  end roleDisambiguation
+
+  private def disambiguation(global: Protocol): Boolean =
+    global match
+      // terminal cases //
+      case Interaction  (_, _, _, _) => true
+      case RecursionCall(_) => true
+      case End              => true
+      // recursive cases //
+      case RecursionFixedPoint(_, globalB) => disambiguation(globalB)
+      case Sequence(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
+      case Parallel(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
+      case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, getAgents(global))
+      // unexpected cases //
+      case local => throw new RuntimeException(s"unexpected local type $local found\n")
+  end disambiguation
+
+  def apply(global: Protocol): Boolean = disambiguation(global)
+end Disambiguation
+*/

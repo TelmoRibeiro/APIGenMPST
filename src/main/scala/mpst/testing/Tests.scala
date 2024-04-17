@@ -1,9 +1,9 @@
 package mpst.testing
 
-import mpst.syntax.{Protocol, Parser}
-import mpst.projectability.Projectability
-import mpst.projection.Projection
 import mpst.encoding.NoEncoding
+import mpst.projection.Projection
+import mpst.syntax.Parser
+import mpst.syntax.Protocol
 
 object Tests:
   // Standard Testing //
@@ -57,16 +57,13 @@ object Tests:
       println(s"PROTOCOL: $protocol")
       val global: Protocol = Parser(protocol)
       println(s"GLOBAL TYPE: $global")
-      if   !Projectability(global)
-      then println(s"PROJECTION REJECTED!")
-      else for role <- Protocol.getAgents(global) yield
-        val local: Protocol = Projection(role, global)
-        println(s"LOCAL TYPE ($role): $local")
+      // should run analysis here!
+      for agent -> local <- Projection.projectionWithAgent(global) yield
+        println(s"LOCAL TYPE ($agent): $local")
         NoEncoding(local)
         println()
       println()
-    println()
-    println()
+      println()
   end test
 
   def apply(): Unit =
