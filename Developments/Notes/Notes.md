@@ -5,29 +5,10 @@
 4) Refinment Types | Liquid Types
 
 # Next Step
-- Table
-- Fix Recursion (syntax: def X in G)
-- Fix Recursion (Projection by Synchronous)
-- Bug Hunting
+- Recursion (Projection by Synchronous)
 - Network Semantics
-- ICE | fst: March->April | snd: April-12
-- 2024/May => FACS 15/05 - Fundamental Aspects of Component Softwares
-- 2024/_   => ICORE
-
-- add examples in papers
-- gerar animacao para as semanticas 2/3
-- capitulo de implementacao/feature que tenho
-- 05/03 10h
+- exemple focus
 - Corinne/ Oven / Choreo / Jullien Lange, Emilio Tuosto, Nobbuko 
-- details on the tools ()
-
-
-chapter:
-- 
--
--
--
--
 
 # Semantics
 ### Previous Papers
@@ -182,24 +163,19 @@ implementation over scribble
 Well-Branchedness achieved through a selector S, where S is a participant that must appear in the head interaction of both branches and through it we should be able to distinguish the branches
 
 # Meeting Notes
-- Report acerca do semantic survey (diferencas entre eles)
-- grouping dos papers por properties
 - keywords que permitem a escolhas (parametros)
-- Linguagem parameterisada gerada pela features escolhidas
--  
+- linguagem parameterisada gerada por features escolhidas
 
+# To Remember
 - rec. guarded
 - p != q
 - li != lj
-
-values sent:
-labels
-sorts
-labels + sorts
+- values sent:
+    - labels
+    - sorts
+    - labels + sorts
 
 "labels in a type need to be pairwise distinct"?
-
-"top-down" development of software <=> global/local view (a tool for choreography-based ...) 
 
 # A Tool for Choreography-Based Analysis of Message-Passing Software (Tool Associated)
 

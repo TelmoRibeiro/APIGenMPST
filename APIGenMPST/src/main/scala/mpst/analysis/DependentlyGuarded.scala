@@ -6,9 +6,6 @@ import mpst.utilities.Types.*
 
 /* IDEA:
   - check well-formedness on *recursion*
-    - recurses over every standard constructor
-    - with caveats because join is applied over the recursion result
-    - on loop does a special check
 
    - check loop:
     - for agent <- agents(global)
@@ -19,6 +16,7 @@ import mpst.utilities.Types.*
 */
 
 object DependentlyGuarded:
+  /* testing stuff
   def agrees(protocol:Protocol,action:Action):Option[Protocol] =
     protocol match
       case Interaction(agentA,agentB,_,_) =>
@@ -57,4 +55,5 @@ object DependentlyGuarded:
         if xB contains protocolB then Some(protocolB)
         else Some(End)
   end agrees
+  */
 end DependentlyGuarded
