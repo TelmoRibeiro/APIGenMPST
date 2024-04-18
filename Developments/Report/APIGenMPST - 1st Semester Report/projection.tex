@@ -1,0 +1,26 @@
+\normalsize
+When \textit{global types} admit all the \textbf{projectability properties} then it can be submitted to the next phase on the MPSTs pipeline.\\
+\textbf{Projection} refers to the step where \textit{local types} are derived from the \textit{global type}. Each projection is the local understanding of the \textit{global type} from the point of view of a given role.\\
+\\
+Implementation-wise, the projection phase begins with the collection of all roles from the \textit{global type}.\\
+Then, for each agent, there will be an attempt to translate the \textit{global type} where only the actions related to the agent are aimed to be kept.\\
+When the role is not present in an interaction, either as sender or as receiver, then said interaction is replaced by the internal \textit{local type} \textbf{skip}.\\
+\begin{lstlisting}[language=Scala, caption=Projection]
+private def projection(global: Protocol, role: String): Protocol =
+    global match
+        // terminal cases //
+        case Interaction(agentA, agentB, message) =>
+            if      role == agentA then Send   (agentA, agentB, message)
+            else if role == agentB then Receive(agentB, agentA, message)
+            else    Skip
+        case RecursionCall(variable) => RecursionCall(variable)
+        // recursive cases //
+        case RecursionFixedPoint(variable, globalB) => RecursionFixedPoint(variable, projection(globalB, role))
+        case Sequence(globalA, globalB) => Sequence(projection(globalA, role), projection(globalB, role))
+        case Parallel(globalA, globalB) => Parallel(projection(globalA, role), projection(globalB, role))
+        case Choice  (globalA, globalB) => Choice  (projection(globalA, role), projection(globalB, role))
+        // unexpected cases //
+        case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+end projection
+\end{lstlisting}
+After such replacements are preformed, there will be a cleaning phase where as a side effect all \textbf{skips} will be propagated, until it has reached a state that can no longer be simplified, that is, only \textit{local types} that mention the role and are allowed and no \textbf{skip} is present.

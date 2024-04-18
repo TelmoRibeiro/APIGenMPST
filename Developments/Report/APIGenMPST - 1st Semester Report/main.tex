@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{placeins}
+\usepackage{listings} % Required for inseting highlited code
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+
+\title {
+    \textbf{APIGenMPST -  1st Semester Report}
+}
+
+\author {
+    Telmo Ribeiro\\
+    Faculdade de Ciências da Universidade do Porto\\
+    Porto, Portugal\\
+    telmo.ribeiro@fc.up.pt
+}
+\date{December 2023}
+
+\maketitle
+\section{Introduction}
+\input{introduction.tex}
+\pagebreak
+
+\maketitle
+\section{Implementation Choices}
+\input{implementation_choices}
+\pagebreak
+
+\maketitle
+\section{Grammar}
+\input{grammar.tex}
+\pagebreak
+
+\maketitle
+\section{Parsing}
+\input{parsing.tex}
+\pagebreak
+
+\maketitle
+\section{Projectability Checking}
+\input{projectability_checking.tex}
+\pagebreak
+
+\maketitle
+\section{Projection}
+\input{projection.tex}
+\pagebreak
+
+\maketitle
+\section{Semantics}
+\input{semantics.tex}
+\pagebreak
+
+\nocite{scalas2019less}
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+\end{document}

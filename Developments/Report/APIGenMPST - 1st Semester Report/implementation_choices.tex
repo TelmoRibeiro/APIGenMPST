@@ -1,0 +1,17 @@
+\normalsize
+In the literature we are often faced with different choices regarding the meaning, scope and expressiveness of the \textit{global types}.\\
+Indeed, throughout the initial phase there was a discussion on choices made like:\\
+- Interaction: Synchronous vs Asynchronous\\
+- \textbf{Sequences}: Weak vs Strong\\
+- \textbf{Parallel}: Free Interleaving vs No Interleaving\\
+- \textbf{Branching}: Plain vs Robust\\
+- \textbf{Recursion}: Fixed Point vs Kleene's Closure\\
+There was a debate of which \textit{global type}'s would be picked for implementation and if that was the case, how would such implementation be achieved.\\
+Both problems were sorted through the mentality that we would like to achieve something that was present in the majority of papers so that previous readers could relate to the benefits of such picks as well as make the language the most expressive we could.\\
+For example, when talking about recursion there are usually two ways to go about it, either fixed points or Kleene's closure.\\
+It is known[add\_source] that everything that can be express though Kleene's closure can be express though Fixed Points but the other way around is not true.\\
+Therefore, when choosing between those two options, Fixed Points were picked since they would allow to keep the most expressiveness.\\
+\\
+When going through the literature, there was a change in scope that was also subject of much debate.\\
+Previous papers tend to talk about the sessions in greater detail and delve into aspects such as the handshakes pre-communication between the processes that implement each role and other synchronization techniques [add\_source].\\
+This kind of detail is overlooked by the more recent ones, as such, we also choose to not go in depth when it comes to session creation.

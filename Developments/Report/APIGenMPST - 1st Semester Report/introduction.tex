@@ -1,0 +1,24 @@
+\normalsize
+The operations performed by distributed systems happen in a highly structured manner.\\
+Such property allows these applications to be abstracted as types through an intuitive syntax, which is then used as a basis of validating programs though an associated discipline. \cite{honda2008multiparty}\\
+Multiparty Session Types (MPST) are a formal specification and verification framework for message-passing protocols. \cite{yoshida2019very}\\
+\\
+A simple protocol to describe the relay of a task from a master node to two other worker nodes could be described as the following:\\
+\\
+\textbf{Example 1.1:}\\
+\scriptsize
+\textbf{G = Master$>$WorkerA:Work ; Master$>$WorkerB:Work ;\\ (WorkerA$>$Master:Done $\|$ WorkerB$>$Master:Done)}\\
+\\
+\normalsize
+Both the syntax and the semantics will be better explained going forward but currently it is needed to understand that we have three roles: \textbf{Master}, \textbf{WorkerA} and \textbf{WorkerB}.\\
+Initially, \textbf{Master} delegates Work to \textbf{WorkerA}, then \textbf{Master} delegates the same task to \textbf{WorkerB} and then, in parallel, it will receive a datatype representing that the task as been preformed by each of the workers.\\
+\\
+After the protocol has been established it will be put through the MPST's pipeline.\\
+The steps in said pipeline that are already implemented will be explained throughout the report.\\ 
+\\
+MPSTs provide some guarantees such as:\\ 
+- \textbf{Communication safety} where interactions within a session never incur a communication error.\\
+- \textbf{Progress} where channels for a session are used linearly and are deadlock-free in a single session.\\
+- \textbf{Session fidelity} where the communication sequence in a session follows the protocol declared in the session type.\\
+\\
+All of the implementation so far has been written in Scala.\\

@@ -1,0 +1,20 @@
+\normalsize
+At this point, the goal is to receive a \textit{protocol}'s specification as a \textit{global type} and produce an \textbf{abstract syntax tree (AST)} that accurately represents the former.\\
+To this effect, the Scala's library \textbf{RegexParsers} was used.\\
+Through the aid of hindsight and deeper search it is now known that, performance-wise, there would be libraries that could provide greater benefits. Still, to this point it has not yet been determined performance issues that would justify the parser's rewriting where another library is used as a basis.\\
+\textbf{Roles} and \textbf{datatypes} are currently only allowed to be alphabetic strings, such implementation can be extended quite easily.\\ 
+The order of operations expressed in the parser tries to satisfy what is usually found on the literature.\\
+\\
+\textbf{Global Type's Order:}\\
+\\
+\scriptsize
+\centerline{\textbf{( G ) $>>$ p$>$q:t $>>$ $\mu$X ; G $>>$ X $>>$ G$_1$ ; G$_2$ $>>$ G$_1$ $\|$ G$_2$ $>>$ G$_1$ + G$_2$}}\\
+\\
+\normalsize
+The following steps on the MPSTs pipeline will be performed on top of the \textbf{AST} provided by the parser or by the ones derived through the projection of the former.\\
+Since the \textbf{AST} is implemented in a binary fashion, there is room for optimisation to limitless arguments.\\
+\\
+\textbf{Example 3.1:}\\
+\scriptsize
+create an actually AST representation\\
+\textbf{AST = Sequence(Interaction(Master, WorkerA, Work), Sequence(Interaction(Master, WorkerB, Worker), Parallel(Interaction(WorkerA, Master, Done), Interaction(WorkerB, Master, Done)))}

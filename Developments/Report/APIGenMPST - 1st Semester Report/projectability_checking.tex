@@ -1,0 +1,101 @@
+\normalsize
+This step is dedicated to analyse the provided \textbf{AST} in order to determine if it can be projected or not.\\
+Projectability or wellformedness, is usually divided in a set of properties that must be maintained in order to comply with the demands stated in the Introduction and assure the overall well function of the protocols.\\
+\\
+\textbf{Projectability}\\
+\\
+\textbf{No self-communication:}\\
+Forbidding self-communication was a trivially implementation.\\
+Traversing the \textbf{AST}, every interaction of the type: \textbf{p$>$q:t} needs to be checked assuring that \textbf{p $\neq$ q}. \cite{cledou2022api}\\
+\begin{lstlisting}[language=Scala, caption=No Self-Communication]
+private def selfCommunication(global: Protocol): Boolean =
+    global match
+        // terminal cases //
+        case Interaction(agentA, agentB, _) => agentA != agentB
+        case RecursionCall(_)               => true
+        // recursive cases //
+        case RecursionFixedPoint(_, globalB) => selfCommunication(globalB)
+        case Sequence(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
+        case Parallel(globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
+        case Choice  (globalA, globalB)      => selfCommunication(globalA) && selfCommunication(globalB)
+        // unexpected cases //
+         case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+end selfCommunication
+\end{lstlisting}
+\textbf{No free variables:}\\
+Free recursion variables can not be present on the \textit{global type}. That is, a variable \textbf{X} in a \textit{global type} \textbf{G}, if previously there was a reduction of the \textit{global type}: \textbf{$\mu$X ; G}.\cite{denielou2011dynamic}\\
+A special case is to treat recursion variables that appear in parallel branches as free variables, even when that same parallel was achieved in \textbf{G} after \textbf{$\mu$X ; G}. \cite{denielou2011dynamic}\\
+Although the reason for generally forbidding free variables might be trivial, the special case may not be.\\
+Through this action, we make sure that no race conditions arises from different iterations of the same loop.\\
+\pagebreak
+\begin{lstlisting}[language=Scala, caption=No Free Variables]
+private def freeVariables(variables: Set[String], global: Protocol): Boolean =
+    global match
+        // terminal cases //
+        case Interaction(_, _, _)    => true
+        case RecursionCall(variable) => variables.contains(variable)
+        // recursive cases //
+        case RecursionFixedPoint(variable, globalB) => freeVariables(variables + variable, globalB)
+        case Sequence(globalA, globalB)  =>
+            globalA match
+                case RecursionCall(variable) => freeVariables(variables, globalA) && freeVariables(variables - variable, globalB)
+            case _                       => freeVariables(variables, globalA) && freeVariables(variables, globalB)
+        case Parallel(globalA, globalB)  => freeVariables(Set(), globalA) && freeVariables(Set(), globalB)
+        case Choice  (globalA, globalB)  => freeVariables(variables, globalA) && freeVariables(variables, globalB)
+        // unexpected cases //
+        case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+end freeVariables
+\end{lstlisting}
+\textbf{Disambiguation:}\\
+Disambiguation is concerned with the need of each role to determine what choice's branch was picked.\\
+To meet this criteria it is needed that for each role, its first interaction in both branches are different, either in the roles involved, their actions or their datatype. \cite{denielou2011dynamic}\\
+The current implementation gets the set of head interactions that a role has in each branch, then it checks if the intersection of those sets are empty, accepting if so or rejecting otherwise.\\
+\begin{lstlisting}[language=Scala, caption=Disambiguation]
+@tailrec
+private def roleDisambiguation(globalA: Protocol, globalB: Protocol, roles: Set[String], isStillProjectable: Boolean): Boolean =
+    if   roles.isEmpty
+    then isStillProjectable
+    else
+        val role: String               = roles.head
+        val headGlobalA: Set[Protocol] = headInteraction(globalA, role)
+        val headGlobalB: Set[Protocol] = headInteraction(globalB, role)
+        val isProjectable: Boolean     = (headGlobalA intersect headGlobalB).isEmpty
+        roleDisambiguation(globalA, globalB, roles - role, isStillProjectable && isProjectable)
+end roleDisambiguation
+
+private def disambiguation(global: Protocol): Boolean =
+    global match
+        // terminal cases //
+        case Interaction(_, _, _) => true
+        case RecursionCall(_)     => true
+        // recursive cases //
+        case RecursionFixedPoint(_, globalB) => disambiguation(globalB)
+        case Sequence(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
+        case Parallel(globalA, globalB)      => disambiguation(globalA) && disambiguation(globalB)
+        case   Choice(globalA, globalB)      => roleDisambiguation(globalA, globalB, roles(global), true)
+        // unexpected cases //
+        case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+end disambiguation
+\end{lstlisting}
+\textbf{Linearity:}\\
+The concept and therefore, the implementation of linearity is close to that of disambiguation.\\
+For each parallel \textit{global type} we need to make sure that there are no similar interactions in both branches. \cite{cledou2022api}\\
+We retrieve the set of all the interactions in both branches a role is involved in, then we  make sure that the intersection of both sets are empty, accepting if so or rejecting otherwise.\\
+\begin{lstlisting}[language=Scala, caption=Linearity]
+private def linearity(global: Protocol): Boolean =
+    global match
+        // terminal cases //
+        case Interaction(_, _, _) => true
+        case RecursionCall(_)     => true
+        // recursive cases //
+        case RecursionFixedPoint(_, globalB) => linearity(globalB)
+        case Sequence(globalA, globalB)      => linearity(globalA) && linearity(globalB)
+        case Parallel(globalA, globalB)      =>
+            val iterationsA: Set[Protocol] = interactions(globalA)
+            val iterationsB: Set[Protocol] = interactions(globalB)
+            (iterationsA intersect iterationsB).isEmpty
+        case Choice  (globalA, globalB)      => linearity(globalA) && linearity(globalB)
+        // unexpected cases //
+        case _ => throw new RuntimeException("\nExpected:\tGlobalType\nFound:\t\tLocalType")
+end linearity    
+\end{lstlisting}

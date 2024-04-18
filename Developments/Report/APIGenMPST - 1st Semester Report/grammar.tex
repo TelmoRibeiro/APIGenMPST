@@ -1,0 +1,57 @@
+\normalsize
+MPSTs depend on the evaluation of \textit{global types} in order to derive the \textit{local types}, through the projection of the former trough every role partaking in it.\\
+An overlapping of features from either \textit{global} and \textit{local types} are found in the literature \cite{jongmans2022st4mp} and there was an active effort to maintain them in a versatile and expressive manner.\\
+The description of both grammars goes as follows:\\
+\\
+\textbf{Global Type's Grammar:}\\
+\\
+\centerline{\textbf{G ::= p$>$q:t $\vert$ G$_1$ + G$_2$ $\vert$ G$_1$ ; G$_2$ $\vert$ G$_1$ $\|$ G$_2$ $\vert$ $\mu$X ; G $\vert$ X $\vert$ skip}}\\
+\\
+\textit{Global type}'s meanings:\\
+- \textbf{p$>$q:t} is the asynchronous communication from the role \textbf{p} to the role \textbf{q} of the datatype \textbf{t}.\\
+- \textbf{G$_1$ + G$_2$} where \textbf{+} is the branching option between G$_1$ and G$_2$.\\
+- \textbf{G$_1$ ; G$_2$} where \textbf{;} is the \textbf{weak} sequential composition of G$_1$ and G$_2$.\\
+- \textbf{G$_1$ $\|$ G$_2$} where \textbf{$\|$} is the parallel, with free interleaving, composition of G$_1$ and G$_2$.\\
+- \textbf{$\mu$X ; G} is the bounding of the fixed point variable \textbf{X} to the recursive \textit{global type} \textbf{G}.\\
+- \textbf{X} is a fixed point variable used in the call of the recursive global type.\\
+- \textbf{skip} is an internal \textit{global type} with no meaning except to be skipped over.\\
+\\
+\textbf{Example 2.1:}\\
+\scriptsize
+\textbf{G = Master$>$WorkerA:Work ; Master$>$WorkerB:Work ; (WorkerA$>$Master:Done $\|$ WorkerB$>$Master:Done)}\\
+\\
+\normalsize
+\textbf{Local Type's Grammar:}\\
+\\
+\centerline{\textbf{L ::= pq!t $\vert$ pq?t $\vert$ L$_1$ + L$_2$ $\vert$ L$_1$ ; L$_2$ $\vert$ L$_1$ $\|$ L$_2$ $\vert$ $\mu$X ; L $\vert$ X $\vert$ skip}}\\
+\\
+With the following meanings:\\
+- \textbf{pq!t} is the asynchronous send from role \textbf{p} to role \textbf{q} of the datatype \textbf{t}.\\
+- \textbf{pq?t} is the asynchronous receive from role \textbf{p} to role \textbf{q} of the datatype \textbf{t}.\\
+- all other \textit{local types} behave in a similar way to their \textit{global type}'s counterpart.\\
+\\
+\textbf{Example 2.2:}\\
+\scriptsize
+\textbf{L$_{Master}$ = MasterWorkerA!Work ; MasterWorkerB!Work ; (MasterWorkerA?Done $\|$ MasterWorkerB?Done)}\\
+\textbf{L$_{WorkerA}$ = WorkerAMaster?Work ; WorkerAMaster!Done}\\
+\textbf{L$_{WorkerB}$ = WorkerBMaster?Work ; WorkerBMaster!Done}\\
+\\
+\normalsize
+Implementation-wise the decision was made to collapse both the \textit{global} and \textit{local type}'s grammar into the \textit{protocol}'s grammar.\\
+Since both share extreme similarities, we can benefit from optimisations like code reuse by having them under the same structure, when such reuse can not be preformed it is not troublesome to assert that only instructions from either \textit{global} or \textit{local types} are expected.
+\begin{lstlisting}[language=Scala, caption=grammar]
+enum Protocol:
+    // GlobalTypes //
+    case Interaction(agentA: String, agentB: String, message: String)
+    case RecursionFixedPoint(variable: String, protocolB: Protocol)
+    case RecursionCall(variable: String)
+    case Sequence(protocolA: Protocol, protocolB: Protocol)
+    case Parallel(protocolA: Protocol, protocolB: Protocol)
+    case Choice  (protocolA: Protocol, protocolB: Protocol)
+    // LocalTypes //
+    case Send   (agentA: String, agentB: String, message: String)
+    case Receive(agentA: String, agentB: String, message: String)
+    // Internal //
+    case Skip
+end Protocol
+\end{lstlisting}
