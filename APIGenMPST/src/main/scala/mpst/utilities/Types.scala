@@ -5,9 +5,10 @@ import mpst.syntax.Protocol
 object Types:
   // recursion variables //
   type Variable = String
-  // agent/roles //
+  // communication //
   type Agent   = String
   type Message = String
+  type Sort    = String
   // actions //
   type Action = Protocol
   // states //

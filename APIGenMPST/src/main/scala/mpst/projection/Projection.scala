@@ -5,16 +5,26 @@ import mpst.syntax.Protocol.*
 import mpst.utilities.Simplifier
 import mpst.utilities.Types.*
 
-
 object Projection:
   def projectionWithAgent(global:Protocol):Set[(Agent,Protocol)] =
     val agents = getAgents(global)
     for agent <- agents yield
-      val local = apply(agent, global)
-      agent -> local
+      val maybeLocal = getProjection(global)(using agent)
+      maybeLocal match
+        case Some(local) => agent -> Simplifier(local)
+        case None        => throw new RuntimeException(s"projection undefined for agent [$agent] in [$global]\n")
   end projectionWithAgent
 
-  def projection(global:Protocol)(using agent:Agent):Option[Protocol] =
+  def projection(global:Protocol):Set[Protocol] =
+    val agents = getAgents(global)
+    for agent <- agents yield
+      val maybeLocal = getProjection(global)(using agent)
+      maybeLocal match
+        case Some(local) => Simplifier(local)
+        case None        => throw new RuntimeException(s"projection undefined for agent [$agent] in [$global]\n")
+  end projection
+
+  private def getProjection(global:Protocol)(using agent:Agent):Option[Protocol] =
     global match
       case Interaction(agentA,agentB,message,sort) =>
         if      agent == agentA then Some(Send   (agentA,agentB,message,sort))
@@ -22,46 +32,37 @@ object Projection:
         else    None
       case RecursionCall(variable) => Some(global)
       case End => Some(global)
-      case RecursionFixedPoint(variable, globalB) =>
-        val maybeLocalB: Option[Protocol] = projection(globalB)
-        maybeLocalB match
-          // may be too restrictive but allows projection's correctness //
-          case Some(RecursionCall(variable)) => None
-          case None                          => None
-          case Some(localB)                  => Some(RecursionFixedPoint(variable, localB))
-      case Sequence(globalA, globalB) =>
-        val maybeLocalA: Option[Protocol] = projection(globalA)
-        val maybeLocalB: Option[Protocol] = projection(globalB)
+      case Sequence(globalA,globalB) =>
+        val maybeLocalA = getProjection(globalA)
+        val maybeLocalB = getProjection(globalB)
          maybeLocalA -> maybeLocalB match
           case Some(localA) -> Some(localB) => Some(Sequence(localA, localB))
           case Some(localA) -> None         => Some(localA)
           case None -> Some(localB)         => Some(localB)
           case None -> None                 => None
-      case Parallel(globalA, globalB) =>
-        val maybeLocalA: Option[Protocol] = projection(globalA)
-        val maybeLocalB: Option[Protocol] = projection(globalB)
+      case Parallel(globalA,globalB) =>
+        val maybeLocalA = getProjection(globalA)
+        val maybeLocalB = getProjection(globalB)
         maybeLocalA -> maybeLocalB match
           case Some(localA) -> Some(localB) => Some(Parallel(localA, localB))
           case Some(localA) -> None         => Some(localA)
           case None -> Some(localB)         => Some(localB)
           case None -> None                 => None
-      case Choice  (globalA, globalB) =>
-        val maybeLocalA: Option[Protocol] = projection(globalA)
-        val maybeLocalB: Option[Protocol] = projection(globalB)
+      case Choice(globalA,globalB) =>
+        val maybeLocalA = getProjection(globalA)
+        val maybeLocalB = getProjection(globalB)
         maybeLocalA -> maybeLocalB match
           case Some(localA) -> Some(localB) if localA == localB => Some(localA)
           case Some(localA) -> Some(localB) => Some(Choice(localA, localB))
           case Some(localA) -> None         => Some(localA)
           case None -> Some(localB)         => Some(localB)
           case None -> None                 => None
-      // unexpected cases //
+      case RecursionFixedPoint(variable,globalB) =>
+        val maybeLocalB = getProjection(globalB)
+        maybeLocalB match
+          case Some(RecursionCall(variable)) => None // @ telmo - may be too restrictive but allows projection's correctness
+          case None         => None
+          case Some(localB) => Some(RecursionFixedPoint(variable,localB))
       case _ => None
-  end projection
-
-  def apply(role: String, global: Protocol): Protocol =
-    val maybeLocal: Option[Protocol] = projection(global)(using role)
-    maybeLocal match
-      case Some(local) => Simplifier(local)
-      case None        => throw new RuntimeException(s"could not project global type in $global\n")
-  end apply
+  end getProjection
 end Projection

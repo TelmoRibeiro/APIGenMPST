@@ -36,7 +36,7 @@ case class Multiset[A](var data: Map[A,Int] = Map()):
         yield at._1->(at._2-other.data(at._1)))) // all `this` that is partially dropped by `other`
   end --
 
-  @targetName("minus")
+  @targetName("-")
   def -(act:A): Multiset[A] =
     data.get(act) match
       case Some(v) if v>1 =>

@@ -1,27 +1,29 @@
 package mpst.encoding
 
-import mpst.operational_semantic.local_semantic.SSSemantic
+import mpst.operational_semantic.SSSemantic
 import mpst.syntax.Protocol
+import mpst.utilities.Environment.*
 import mpst.utilities.Types.*
 
 object NoEncoding:
-  // lazy implementation to traverse the semantic output //
-  private def lazyTraverse(nextReductions: Set[(Action,State)], visitedReductions: Set[(Action,State)]): Unit =
-    if nextReductions.isEmpty then
+  private def lazyTraverse(next:Set[(Action,Protocol)],visited:Set[(Action,Protocol)])(using environment:Map[Variable,Protocol]):Unit =
+    if next.isEmpty then
       println("done traversing")
       return
-    val reduction = nextReductions.head
-    val reductionAction -> (reductionEnvironment -> reductionLocal) = reduction
-    println(s"Action: $reductionAction")
-    println(s" Local: $reductionLocal")
-    if visitedReductions contains reduction then
+    val nextAction -> nextLocal = next.head
+    println(s"Action: $nextAction")
+    println(s" Local: $nextLocal")
+    if visited contains next.head then
       println("reduction was visited already\n")
-      lazyTraverse(nextReductions.tail, visitedReductions)
+      lazyTraverse(next.tail,visited)
       return
     println()
-    val  children = SSSemantic.reduceState(reductionEnvironment -> reductionLocal)
-    lazyTraverse(children ++ nextReductions.tail, visitedReductions + nextReductions.head)
+    val children = SSSemantic.next(nextLocal)
+    lazyTraverse(children ++ next.tail,visited + next.head)
   end lazyTraverse
 
-  def apply(local: Protocol): Unit = lazyTraverse(SSSemantic.reduceState(Map() -> local), Set())
+  def apply(local:Protocol):Unit =
+    val environment = getEnvironment(local)(using Map())
+    lazyTraverse(SSSemantic.next(local)(using environment),Set())(using environment)
+  end apply
 end NoEncoding
