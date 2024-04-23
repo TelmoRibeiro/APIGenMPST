@@ -1,3 +1,4 @@
+/*
 package mpst.main
 
 import mpst.operational_semantic.Network.*
@@ -13,6 +14,41 @@ import scala.annotation.tailrec
 import scala.io.StdIn
 
 object Main:
+  @tailrec
+  private def networkMSTraverse(locals:Set[Protocol],pending:Multiset[Action],trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
+    val nextNetwork = NetworkMultiset.nextNetwork(locals,pending)
+    for local <- locals yield
+      println(s"local: $local")
+    println()
+    for (nextAction,_,_) <- nextNetwork yield
+      println(s"ACTION: $nextAction\n")
+    if nextNetwork.toSeq.isEmpty then
+      println(s"final trace: $trace") ; return
+    println(s"action index:")
+    val actionIndex = StdIn.readInt( )
+    val (a,ls,p) = nextNetwork.toSeq(actionIndex)
+    println(s"trace: ${trace :+ a}")
+    networkMSTraverse(ls,p,trace :+ a)
+  end networkMSTraverse
+
+  type Queue = Map[(Agent,Agent),List[Message]]
+  @tailrec
+  private def networkCSTraverse(locals:Set[Protocol],pending:Queue,trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
+    val nextNetwork = NetworkCausal.nextNetwork(locals,pending)
+    for local <- locals yield
+      println(s"local: $local")
+    println()
+    for (nextAction,_,_) <- nextNetwork yield
+      println(s"ACTION: $nextAction\n")
+    if nextNetwork.toSeq.isEmpty then
+      println(s"final trace: $trace") ; return
+    println(s"action index:")
+    val actionIndex = StdIn.readInt( )
+    val (a,ls,p) = nextNetwork.toSeq(actionIndex)
+    println(s"trace: ${trace :+ a}")
+    networkCSTraverse(ls,p,trace :+ a)
+  end networkCSTraverse
+
   def main(args: Array[String]): Unit =
     // Tests()
     // val protocol = "(m>wA:Done<void> + m>wB:Done<void>)" // not accepted by me or oven but accepted by choreo
@@ -26,28 +62,10 @@ object Main:
     if !wellformed then throw new RuntimeException(s"not well formed!\n")
     for agent -> local <- projectionWithAgent(global) yield
       println(s"LOCAL [$agent] - $local")
-    @tailrec
-    def networkTraverse(locals:Set[Protocol],network:Multiset[Action],counter:Int,trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
-      println(s"TRACE: $trace")
-      if counter <= 0 then
-        println("OOPS, TO reached!")
-        return
-      val result = NetworkMultiset.next(locals,network)
-      for (nextAction,nextLocals,nextNetwork) <- result yield
-        println(s"CURRENT ENTRY")
-        println(s"Action Selected: $nextAction")
-        println(s"Locals State:")
-        for nextLocal <- nextLocals yield
-          println(s"Local: $nextLocal")
-        println(s"Network State: $nextNetwork")
-        println()
-      println(s"PLEASE PICK ACTION:")
-      val actionIndex = StdIn.readInt()
-      val (a,ls,n) = result.toSeq(actionIndex)
-      networkTraverse(ls,n,counter-1,trace :+ a)
-    end networkTraverse
     val locals = projection(global)
     val environment = getEnvironment(global)(using Map())
-    networkTraverse(locals,Multiset(),1000,Nil)(using environment)
+    networkMSTraverse(locals,Multiset(),Nil)(using environment)
+    //networkCSTraverse(locals,Map(),Nil)(using environment)
   end main
 end Main
+*/

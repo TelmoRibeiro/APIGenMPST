@@ -3,6 +3,19 @@ package mpst.syntax
 import mpst.utilities.Types.*
 
 enum Protocol:
+  override def toString:String =
+    this match
+      case Interaction(agentA,agentB,message,sort) => s"$agentA>$agentA:$message<$sort>"
+      case Send   (agentA,agentB,message,sort) => s"$agentA$agentB!$message<$sort>"
+      case Receive(agentA,agentB,message,sort) => s"$agentA$agentB?$message<$sort>"
+      case RecursionCall(variable) => s"$variable"
+      case End => s"end"
+      case Sequence(protocolA,protocolB) => s"$protocolA ; $protocolB"
+      case Parallel(protocolA,protocolB) => s"($protocolA || $protocolB)"
+      case Choice  (protocolA,protocolB) => s"($protocolA + $protocolB)"
+      case RecursionFixedPoint(variable,protocolB) => s"def $variable in ($protocolB)"
+  end toString
+
   case Interaction(agentA:Agent,agentB:Agent,message:Message,sort:Sort)
   case Send       (agentA:Agent,agentB:Agent,message:Message,sort:Sort)
   case Receive    (agentA:Agent,agentB:Agent,message:Message,sort:Sort)
