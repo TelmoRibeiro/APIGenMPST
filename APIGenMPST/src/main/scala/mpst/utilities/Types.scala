@@ -3,6 +3,8 @@ package mpst.utilities
 import mpst.syntax.Protocol
 
 object Types:
+  type Global = Protocol
+  type Local  = Protocol
   // recursion variables //
   type Variable = String
   // communication //

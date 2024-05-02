@@ -51,6 +51,7 @@ object Main:
 
   def main(args: Array[String]): Unit =
     // Tests()
+    // val protocol = "(wA>m:Done<void> + m>wA:Done<void>)" // not accepted by me but accepted by oven
     // val protocol = "(m>wA:Done<void> + m>wB:Done<void>)" // not accepted by me or oven but accepted by choreo
     // val protocol = "(m>wA:Done<void> + (m>wA:NotDone<void> ; (m>wB:Done<void> + m>wB:NotDone<void>)))" accepted by me but not oven
     // val protocol = "s>b:Descr<void> ; s>b:Price<void> ; (s>b:Acc<void> + s>b:Rej<void>) ; end" // should and it is accepted

@@ -17,19 +17,17 @@ object SSSemantic:
 
   private def acceptAuxiliary(local:Protocol):Boolean =
     local match
-      // terminal cases //
       case Interaction(_,_,_,_) => false
       case Send   (_,_,_,_) => false
       case Receive(_,_,_,_) => false
-      case RecursionCall(_) => false
+      case RecursionCall(_) => false // @ telmo - to check!
       case End              => true
-      case Sequence(localA, localB) => accept(localA) && accept(localB)
-      case Parallel(localA, localB) => accept(localA) && accept(localB)
-      case Choice  (localA, localB) => accept(localA) || accept(localB)
-      case RecursionFixedPoint(_, localB) => accept(localB)
+      case Sequence(localA,localB) => accept(localA) && accept(localB)
+      case Parallel(localA,localB) => accept(localA) && accept(localB)
+      case Choice  (localA,localB) => accept(localA) || accept(localB)
+      case RecursionFixedPoint(_,localB) => accept(localB)
   end acceptAuxiliary
 
-  // using
   private def nextAuxiliary(protocol:Protocol)(using environment:Map[Variable,Protocol]):List[(Action,Protocol)] =
     protocol match
       case Interaction(agentA,agentB,message,sort) => List(Send(agentA,agentB,message,sort) -> Receive(agentB,agentA,message,sort))

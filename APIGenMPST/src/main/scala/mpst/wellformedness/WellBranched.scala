@@ -5,7 +5,7 @@ import mpst.projection.Projection
 import mpst.projection.Projection.*
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Environment
+import mpst.utilities.Environment.*
 import mpst.utilities.Types.*
 
 /* IDEA:
@@ -31,7 +31,7 @@ object WellBranched:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isWellBranched
 
-  private def checkWellBranched(globalA:Protocol, globalB:Protocol)(using environment:Map[Variable,Protocol]):Boolean =
+  private def checkWellBranched(globalA:Protocol,globalB:Protocol)(using environment:Map[Variable,Protocol]):Boolean =
     // @ telmo - nextActionsX = actions produced in reducing globalX
     val nextActionsA = for actionsA -> stateA <- SSSemantic.next(globalA) yield actionsA
     val nextActionsB = for actionsB -> stateB <- SSSemantic.next(globalB) yield actionsB
@@ -68,14 +68,14 @@ object WellBranched:
     true
   end checkWellBranched
 
-  private def receivingActions(global:Protocol, sendingActions:Set[(Agent,Message)])(using environment:Map[Variable,Protocol]):Set[(Agent,Message)] =
+  private def receivingActions(global:Protocol,sendingActions:Set[(Agent,Message)])(using environment:Map[Variable,Protocol]):Set[(Agent,Message)] =
     for agent -> local <- Projection.projectionWithAgent(global)
         case Receive(agent,selector,message,_) -> _ <- SSSemantic.next(local) if sendingActions contains agent -> message
     yield agent -> message
   end receivingActions
 
   def apply(global:Protocol):Boolean =
-    val environment = Environment.getEnvironment(global)(using Map())
+    val environment = getEnvironment(global)(using Map())
     isWellBranched(global)(using environment)
 end WellBranched
 

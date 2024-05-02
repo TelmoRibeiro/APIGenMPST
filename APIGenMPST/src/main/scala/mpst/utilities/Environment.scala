@@ -10,11 +10,11 @@ object Environment:
   // @ telmo - ASSUMES NO REPETITION OF VARIABLES
   def getEnvironment(protocol:Protocol)(using environment:Map[Variable,Protocol]):Map[Variable,Protocol] =
     protocol match
-      case Interaction(agentA,agentB,message,sort) => Map()
-      case Send   (agentA,agentB,message,sort) => Map()
-      case Receive(agentA,agentB,message,sort) => Map()
-      case RecursionCall(variable) => Map()
-      case End => Map()
+      case Interaction(agentA,agentB,message,sort) => environment
+      case Send   (agentA,agentB,message,sort) => environment
+      case Receive(agentA,agentB,message,sort) => environment
+      case RecursionCall(variable) => environment
+      case End => environment
       case Sequence(protocolA,protocolB) =>
         val environmentA = getEnvironment(protocolA)
         val environmentB = getEnvironment(protocolB)(using environmentA)

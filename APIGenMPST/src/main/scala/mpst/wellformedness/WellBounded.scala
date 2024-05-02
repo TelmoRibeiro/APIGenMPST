@@ -34,7 +34,7 @@ object WellBounded:
       case Sequence(globalA,globalB) => getFreeVariables(globalA) ++ getFreeVariables(globalB)
       case Parallel(globalA,globalB) => getFreeVariables(globalA)(using Set()) ++ getFreeVariables(globalB)(using Set())
       case Choice  (globalA,globalB) => getFreeVariables(globalA) ++ getFreeVariables(globalB)
-      case RecursionFixedPoint(variable,globalB) => getFreeVariables(globalB)
+      case RecursionFixedPoint(variable,globalB) => getFreeVariables(globalB)(using declaredVariables ++ Set(variable))
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end getFreeVariables
 

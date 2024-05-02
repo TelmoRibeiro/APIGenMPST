@@ -5,14 +5,61 @@ import mpst.syntax.Protocol.*
 import mpst.utilities.Multiset
 import mpst.utilities.Types.*
 
+
 /* IDEA:
-  -
 
   @ telmo -
     causal network comes from choreo
 */
 
 object Network:
+  // Multiparty Synchronous Session Types: projection erases Parallel
+  // A Very Gentle Introduction to Multiparty Session Types: does not support Parallel at all 
+  object SyncNetworkMultiset:
+    def nextNetwork(locals:Set[Protocol],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Multiset[Action])] =
+      val nextNetwork = for local <- locals yield
+        val nextEntry = getNextEntry(local,locals,pending)
+          for (nextAction,nextLocal,nextPending) <- nextEntry yield
+            val nextLocals = locals-local+nextLocal
+            (nextAction,nextLocals,nextPending)
+      nextNetwork.flatten
+    end nextNetwork
+
+    private def getNextEntry(local:Local,locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Protocol,Multiset[Action])] =
+      for nextAction -> nextLocal <- SyncSemantic.next(local) if notBlocked(nextAction,locals,pending) yield
+        val nextPending = getNextPending(nextAction,pending)
+        (nextAction,nextLocal,nextPending)
+    end getNextEntry
+
+    private def getNextPending(action:Action,pending:Multiset[Action]):Multiset[Action] =
+      action match
+        case Send   (agentA,agentB,message,sort) => pending + Send(agentA,agentB,message,sort)
+        case Receive(agentA,agentB,message,sort) => pending - Send(agentB,agentA,message,sort)
+        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
+    end getNextPending
+
+    private def notBlocked(action:Action,locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Boolean =
+      // @ telmo - one action dealt at the time & there is an agent who can receive immediately
+      def canReceiveImmediately(action:Action,locals:Set[Local]):Boolean =
+        action match
+          case Send(agentA,agentB,message,sort) =>
+            val receives = for local <- locals yield
+              for nextAction -> _ <- SyncSemantic.next(local) if nextAction == Receive(agentB,agentA,message,sort) yield nextAction
+            val flatReceives = receives.flatten
+            println(s"ACTION: $action | RECEIVES: $flatReceives")
+            flatReceives.nonEmpty
+          case action => throw new RuntimeException(s"unexpected action found in [$action]\n")
+      end canReceiveImmediately
+      action match
+        case Send   (agentA,agentB,message,sort) => pending.isEmpty && canReceiveImmediately(action,locals)
+        case Receive(agentA,agentB,message,sort) => pending `contains` Send(agentB,agentA,message,sort)
+        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
+    end notBlocked
+  end SyncNetworkMultiset
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   object NetworkMultiset:
     def nextNetwork(locals:Set[Protocol],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Multiset[Action])] =
       val nextNetwork = for local <- locals yield
@@ -31,20 +78,20 @@ object Network:
 
     private def getNextPending(action:Action,pending:Multiset[Action]):Multiset[Action] =
       action match
-        case Send(agentA, agentB, message, sort) => pending + Send(agentA, agentB, message, sort)
-        case Receive(agentA, agentB, message, sort) => pending - Send(agentB, agentA, message, sort)
+        case Send   (agentA,agentB,message,sort) => pending + Send(agentA,agentB,message,sort)
+        case Receive(agentA,agentB,message,sort) => pending - Send(agentB,agentA,message,sort)
         case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
     end getNextPending
 
     private def notBlocked(action:Action,pending:Multiset[Action]):Boolean =
       action match
-        case Send(_, _, _, _) => true
+        case Send   (_, _, _, _) => true
         case Receive(agentA,agentB,message,sort) => pending `contains` Send(agentB, agentA, message, sort)
         case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
     end notBlocked
   end NetworkMultiset
 
-  type Queue = Map[(Agent,Agent),List[Message]]
+  private type Queue = Map[(Agent,Agent),List[Message]]
   object NetworkCausal:
     def nextNetwork(locals:Set[Protocol],pending:Queue)(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Queue)] =
       val nextNetwork = for local <- locals yield

@@ -1,7 +1,7 @@
 package mpst.web_animator
 
 import mpst.operational_semantic.Network.*
-import mpst.projection.Projection.*
+import mpst.projection.SyncProjection.*
 import mpst.syntax.Parser
 import mpst.syntax.Protocol
 import mpst.utilities.Environment.*
@@ -45,7 +45,7 @@ object Main:
   end addActionButton
 
   private def networkMSTraverse(locals:Set[Protocol],pending:Multiset[Action],trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
-    val nextNetwork = NetworkMultiset.nextNetwork(locals,pending)
+    val nextNetwork = SyncNetworkMultiset.nextNetwork(locals,pending)
     for local <- locals yield
       addParagraph(s"LOCAL: $local",document.body)
     var actionIndex = 0
@@ -92,7 +92,16 @@ object Main:
   end showText
 
   def main(args:Array[String]):Unit =
-    val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; (wA>m:Done<void> ; end || wB>m:Done<void> ; end)"
+    // val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; (wA>m:Done<void> ; end || wB>m:Done<void> ; end)"
+      // fails async projection since m is present in both parallel branches
+    // val protocol = "a>b:mA<void> || a>c:mB<void>"
+      // is right by our ASYNC standards but it is not by MAsyncST (single threaded calculus)
+    // val protocol = "(S>C:A<void> + C>S:B<void>) ; C>S:DONE<void> ; end"
+      // fails here and in choreo | passes in Oven
+    val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; wA>m:Done<void> ; wB>m:Done<void> ; end"
+    // val protocol = "client>addition:int<void> ; client>addition:int<void> ; def X in ((addition>successor:true<void> ; addition>client:int<void> ; end) + (addition>successor:false<void> ; addition>successor:int<void> ; successor>addition:int<void> ; addition>predecessor:int<void> ; predecessor>addition:int<void> ; X))"
+      // not quite right projecting wierd
+      // gotta fix projection and check more recursion
     showProtocol(protocol)
     val global = Parser(protocol)
     showGlobal(global.toString)
