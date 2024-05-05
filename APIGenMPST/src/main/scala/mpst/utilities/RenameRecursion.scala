@@ -3,7 +3,15 @@ package mpst.utilities
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
 
+/* IDEA:
+  - attempt at renaming the whole recursion before working with it
 
+  @ telmo -
+    not completed/tested
+    problematic...
+*/
+
+@deprecated
 object RenameRecursion:
   // @ telmo - need to check if variableRenamed already does not exist before renameCall
   // @ telmo - "using" not helping since both "using" have the same type
@@ -15,7 +23,7 @@ object RenameRecursion:
         if variable == toRenameVariable
         then RecursionCall(renamedVariable)
         else local
-      case End => local
+      case Skip => local
       case Sequence(localA,localB) =>
         val renamedLocalA = renameCall(localA)(using toRenameVariable)(using renamedVariable)
         val renamedLocalB = renameCall(localB)(using toRenameVariable)(using renamedVariable)
@@ -42,7 +50,7 @@ object RenameRecursion:
       case Send   (_,_,_,_) => local -> counter
       case Receive(_,_,_,_) => local -> counter
       case RecursionCall(_) => local -> counter
-      case End => local -> counter
+      case Skip => local -> counter
       case Sequence(localA,localB) =>
         val renamedLocalA -> counterA = renameRecursion(localA)
         val renamedLocalB -> counterB = renameRecursion(localB)(using counterA)

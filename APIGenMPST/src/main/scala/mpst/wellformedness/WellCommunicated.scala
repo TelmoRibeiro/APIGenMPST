@@ -18,7 +18,7 @@ object WellCommunicated:
     global match
       case Interaction(agentA,agentB,_,_) => agentA != agentB
       case RecursionCall(_) => true
-      case End => true
+      case Skip             => true
       case Sequence(globalA,globalB) => isWellCommunicated(globalA) && isWellCommunicated(globalB)
       case Parallel(globalA,globalB) => isWellCommunicated(globalA) && isWellCommunicated(globalB)
       case Choice  (globalA,globalB) => isWellCommunicated(globalA) && isWellCommunicated(globalB)

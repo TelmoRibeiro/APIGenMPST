@@ -23,7 +23,7 @@ object WellChannelled:
     global match
       case Interaction(_,_,_,_) => true
       case RecursionCall(_) => true
-      case End => true
+      case Skip             => true
       case Sequence(globalA,globalB) => isWellChannelled(globalA) && isWellChannelled(globalB)
       case Parallel(globalA,globalB) =>
         val channelsA = channels(globalA)
@@ -42,7 +42,7 @@ object WellChannelled:
     branch match
       case Interaction(agentA,agentB,_,_) => Set() + (agentA -> agentB)
       case RecursionCall(_) => Set()
-      case End              => Set()
+      case Skip             => Set()
       case Sequence(globalA,globalB) => channels(globalA) ++ channels(globalB)
       case Parallel(globalA,globalB) => channels(globalA) ++ channels(globalB)
       case Choice  (globalA,globalB) => channels(globalA) ++ channels(globalB)

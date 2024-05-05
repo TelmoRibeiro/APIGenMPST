@@ -2,17 +2,18 @@ package mpst.projection
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Simplifier
+import mpst.utilities.StructuralCongruence
 import mpst.utilities.Types.*
 
-/*
-  IDEA:
-  - replicating "Multiparty Synchronous Session Types"'s projection
+/* IDEA:
+  - allow the projection of *global types* into *local types*
+  - "Multiparty Synchronous Session Types"-ish projection
 
   @ telmo
-    - projection acts weird (think it comes from Simplifier)
-    - there is no mention of tail recursion in MSyncST
-    - MasterWorkers (standard) protocol fails projection since Master is present in both branches of parallel
+    - NEED TO TEST PROJECTION WITH RECURSION
+    - ADD NON-GUARDED RECURSION RULE FROM GENTLE APPROACH...?
+    - ADD ERRORS TO ERROR HANDLING
+    - not related: there is no mention of tail recursion in MSyncST
 */
 
 object SyncProjection:
@@ -21,7 +22,7 @@ object SyncProjection:
     for agent <- agents yield
       val maybeLocal = getProjection(global)(using agent)
       maybeLocal match
-        case Some(local) => agent -> Simplifier(local)
+        case Some(local) => agent -> StructuralCongruence(local)
         case None        => throw new RuntimeException(s"projection undefined for agent [$agent] in [$global]\n")
   end projectionWithAgent
 
@@ -30,26 +31,27 @@ object SyncProjection:
     for agent <- agents yield
       val maybeLocal = getProjection(global)(using agent)
       maybeLocal match
-        case Some(local) => Simplifier(local)
+        case Some(local) => StructuralCongruence(local)
         case None        => throw new RuntimeException(s"projection undefined for agent [$agent] in [$global]\n")
   end projection
 
   private def getProjection(global:Global)(using agent:Agent):Option[Local] =
     global match
       // @ telmo - if conditions assert well-communication property
+      // @ telmo - team automata
+      // @ telmo - synchronous in branching pomsets
+      // @ telmo - default & and xor
       case Interaction(agentA,agentB,message,sort) =>
         if agent == agentA && agent != agentB then
           return Some(Send   (agentA,agentB,message,sort))
         if agent != agentA && agent == agentB then
           return Some(Receive(agentB,agentA,message,sort))
         if agent != agentA && agent != agentB then
-          return Some(End) // being used as skip
+          return Some(Skip)
         throw new RuntimeException(s"projection undefined for agent [$agent] in [$global]\n")
       case RecursionCall(variable) =>
         Some(global)
-      //case Skip =>
-      //  Some(global)
-      case End  =>
+      case Skip =>
         Some(global)
       case Sequence(globalA,globalB) =>
         val maybeLocalA = getProjection(globalA)
@@ -67,7 +69,9 @@ object SyncProjection:
           val maybeLocalB = getProjection(globalB)
           return maybeLocalB
         if !(agentsA contains agent) && !(agentsB contains agent) then
-          return Some(End)
+          return Some(Skip) // @ telmo - check this
+        // problem in (G1, (G2,G3)) ~~ ((G1,G2),G3))
+        // can p!q:x;G1 || p?q:x;G2 => G1||G2 but p!q:x;G1 || G0;q?p:x;G2
         throw new RuntimeException(s"projection undefined for [$agent] in [$global]\n")
       case Choice(globalA,globalB) =>
         val maybeLocalA = getProjection(globalA)
@@ -82,7 +86,7 @@ object SyncProjection:
           maybeLocalB match
             case Some(localB) => return Some(RecursionFixedPoint(variable,localB))
             case _            => throw new RuntimeException(s"projection undefined for [$agent] in [$global]\n")
-        Some(End)
+        Some(Skip) // @ telmo - check this
       case _ => None
   end getProjection
 end SyncProjection

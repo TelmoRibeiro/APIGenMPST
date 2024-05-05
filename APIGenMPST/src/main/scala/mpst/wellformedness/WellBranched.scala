@@ -1,8 +1,8 @@
 package mpst.wellformedness
 
-import mpst.operational_semantic.SSSemantic
-import mpst.projection.Projection
-import mpst.projection.Projection.*
+import mpst.operational_semantic.AsyncSemantic
+import mpst.projection.AsyncProjection
+import mpst.projection.AsyncProjection.*
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
 import mpst.utilities.Environment.*
@@ -23,7 +23,7 @@ object WellBranched:
     global match
       case Interaction(_,_,_,_) => true
       case RecursionCall(_)     => true
-      case End => true
+      case Skip => true
       case Sequence(globalA,globalB) => isWellBranched(globalA) && isWellBranched(globalB)
       case Parallel(globalA,globalB) => isWellBranched(globalA) && isWellBranched(globalB)
       case Choice  (globalA,globalB) => checkWellBranched(globalA,globalB) && isWellBranched(globalA) && isWellBranched(globalB)
@@ -33,8 +33,8 @@ object WellBranched:
 
   private def checkWellBranched(globalA:Protocol,globalB:Protocol)(using environment:Map[Variable,Protocol]):Boolean =
     // @ telmo - nextActionsX = actions produced in reducing globalX
-    val nextActionsA = for actionsA -> stateA <- SSSemantic.next(globalA) yield actionsA
-    val nextActionsB = for actionsB -> stateB <- SSSemantic.next(globalB) yield actionsB
+    val nextActionsA = for actionsA -> stateA <- AsyncSemantic.next(globalA) yield actionsA
+    val nextActionsB = for actionsB -> stateB <- AsyncSemantic.next(globalB) yield actionsB
     val selectors = for case Send(agentA,_,_,_) <- nextActionsA ++ nextActionsB yield agentA
     if selectors.isEmpty  then throw new RuntimeException(s"no selector in [$globalA] and [$globalB]\n")
     if selectors.size > 1 then throw new RuntimeException(s"multiple selectors in [$globalA] and [$globalB]\n")
@@ -69,8 +69,8 @@ object WellBranched:
   end checkWellBranched
 
   private def receivingActions(global:Protocol,sendingActions:Set[(Agent,Message)])(using environment:Map[Variable,Protocol]):Set[(Agent,Message)] =
-    for agent -> local <- Projection.projectionWithAgent(global)
-        case Receive(agent,selector,message,_) -> _ <- SSSemantic.next(local) if sendingActions contains agent -> message
+    for agent -> local <- AsyncProjection.projectionWithAgent(global)
+        case Receive(agent,selector,message,_) -> _ <- AsyncSemantic.next(local) if sendingActions contains agent -> message
     yield agent -> message
   end receivingActions
 

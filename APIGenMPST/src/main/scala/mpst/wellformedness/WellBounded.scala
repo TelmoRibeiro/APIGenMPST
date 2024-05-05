@@ -30,7 +30,7 @@ object WellBounded:
         if declaredVariables contains variable
         then Set()
         else Set() + variable
-      case End => Set()
+      case Skip => Set()
       case Sequence(globalA,globalB) => getFreeVariables(globalA) ++ getFreeVariables(globalB)
       case Parallel(globalA,globalB) => getFreeVariables(globalA)(using Set()) ++ getFreeVariables(globalB)(using Set())
       case Choice  (globalA,globalB) => getFreeVariables(globalA) ++ getFreeVariables(globalB)

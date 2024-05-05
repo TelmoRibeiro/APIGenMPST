@@ -2,26 +2,25 @@ package mpst.operational_semantic
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Simplifier
+import mpst.utilities.StructuralCongruence
 import mpst.utilities.Types.*
 
-// STRONG SEQ SEMANTIC //
-object SSSemantic:
-  def accept(local:Protocol):Boolean =
-    SSSemantic.acceptAuxiliary(local)
+object AsyncSemantic:
+  def accept(protocol:Protocol):Boolean =
+    AsyncSemantic.acceptAuxiliary(protocol)
   end accept
 
-  def next(local:Protocol)(using environment:Map[Variable,Protocol]):Set[(Action,Protocol)] =
-    SSSemantic.nextAuxiliary(local).toSet
+  def next(protocol:Protocol)(using environment:Map[Variable,Protocol]):Set[(Action,Protocol)] =
+    AsyncSemantic.nextAuxiliary(protocol).toSet
   end next
 
   private def acceptAuxiliary(local:Protocol):Boolean =
     local match
-      case Interaction(_,_,_,_) => false
+      case Interaction(_,_, _, _) => false
       case Send   (_,_,_,_) => false
       case Receive(_,_,_,_) => false
-      case RecursionCall(_) => false // @ telmo - to check!
-      case End              => true
+      case RecursionCall(_) => false // checked with prof. José Proença //
+      case Skip             => true
       case Sequence(localA,localB) => accept(localA) && accept(localB)
       case Parallel(localA,localB) => accept(localA) && accept(localB)
       case Choice  (localA,localB) => accept(localA) || accept(localB)
@@ -31,28 +30,28 @@ object SSSemantic:
   private def nextAuxiliary(protocol:Protocol)(using environment:Map[Variable,Protocol]):List[(Action,Protocol)] =
     protocol match
       case Interaction(agentA,agentB,message,sort) => List(Send(agentA,agentB,message,sort) -> Receive(agentB,agentA,message,sort))
-      case Send   (agentA, agentB, message, sort) => List(protocol -> End)
-      case Receive(agentA, agentB, message, sort) => List(protocol -> End)
+      case Send   (agentA,agentB,message,sort) => List(protocol -> Skip) // @ telmo - avoid inserting "harmful" ends by inserting "harmless" skips
+      case Receive(agentA,agentB,message,sort) => List(protocol -> Skip) // @ telmo - avoid inserting "harmful" ends by inserting "harmless" skips
       case RecursionCall(variable) =>
         val protocolB = environment(variable)
         val nonRecursiveProtocolB = recursionFree(variable,protocolB)
         for nextActionB -> nextProtocolB <- nextAuxiliary(nonRecursiveProtocolB) yield
           nextActionB -> consumeAction(nextActionB,protocolB)
-      case End => Nil
+      case Skip => Nil
       case Sequence(protocolA,protocolB) =>
         val nextA = nextAuxiliary(protocolA)
         val nextB = nextAuxiliary(protocolB)
         val resultA = for nextActionA -> nextProtocolA <- nextA yield
-          nextActionA -> Simplifier(Sequence(nextProtocolA,protocolB))
+          nextActionA -> StructuralCongruence(Sequence(nextProtocolA,protocolB))
         val resultB = if accept(protocolA) then nextB else Nil
         resultA ++ resultB
       case Parallel(protocolA,protocolB) =>
         val nextA = nextAuxiliary(protocolA)
         val nextB = nextAuxiliary(protocolB)
         val resultA = for nextActionA -> nextProtocolA <- nextA yield
-          nextActionA -> Simplifier(Parallel(nextProtocolA,protocolB))
+          nextActionA -> StructuralCongruence(Parallel(nextProtocolA,protocolB))
         val resultB = for nextActionB -> nextProtocolB <- nextB yield
-          nextActionB -> Simplifier(Parallel(protocolA,nextProtocolB))
+          nextActionB -> StructuralCongruence(Parallel(protocolA,nextProtocolB))
         resultA ++ resultB
       case Choice(protocolA,protocolB) =>
         val nextA = nextAuxiliary(protocolA)
@@ -65,36 +64,36 @@ object SSSemantic:
   private def recursionFree(recursionVariable:Variable,protocol:Protocol):Protocol =
     def recursionFreeAuxiliary(protocol:Protocol)(using recursionVariable:Variable):Protocol =
       protocol match
-        case Interaction(agentA,agentB,message,sort) => protocol
-        case Send   (agentA,agentB,message,sort) => protocol
-        case Receive(agentA,agentB,message,sort) => protocol
-        case RecursionCall(variable) => if variable == recursionVariable then End else protocol
-        case End => protocol
+        case Interaction(_,_,_,_) => protocol
+        case Send   (_,_,_,_) => protocol
+        case Receive(_,_,_,_) => protocol
+        case RecursionCall(variable) => if variable == recursionVariable then Skip else protocol
+        case Skip => protocol
         case Sequence(protocolA,protocolB) => Sequence(recursionFreeAuxiliary(protocolA),recursionFreeAuxiliary(protocolB))
         case Parallel(protocolA,protocolB) => Parallel(recursionFreeAuxiliary(protocolA),recursionFreeAuxiliary(protocolB))
         case Choice  (protocolA,protocolB) => Choice  (recursionFreeAuxiliary(protocolA),recursionFreeAuxiliary(protocolB))
-        case RecursionFixedPoint(variable,protocolB) => RecursionFixedPoint(variable,recursionFreeAuxiliary(protocolB))
+        case RecursionFixedPoint(variable, protocolB) => RecursionFixedPoint(variable,recursionFreeAuxiliary(protocolB))
     end recursionFreeAuxiliary
-    Simplifier(recursionFreeAuxiliary(protocol)(using recursionVariable))
+    StructuralCongruence(recursionFreeAuxiliary(protocol)(using recursionVariable))
   end recursionFree
 
   private def consumeAction(action:Action,protocol:Protocol):Protocol =
     def consumeActionAuxiliary(protocol:Protocol)(using action:Action):Protocol =
       protocol match
-        case Interaction(agentA,agentB,message,sort) => if action == protocol then End else protocol
-        case Send   (agentA,agentB,message,sort)     => if action == protocol then End else protocol
-        case Receive(agentA,agentB,message,sort)     => if action == protocol then End else protocol
-        case RecursionCall(variable) => protocol
-        case End => protocol
+        case Interaction(_,_,_,_) => if action == protocol then Skip else protocol
+        case Send   (_,_,_,_)     => if action == protocol then Skip else protocol
+        case Receive(_,_,_,_)     => if action == protocol then Skip else protocol
+        case RecursionCall(_) => protocol
+        case Skip => protocol
         case RecursionFixedPoint(variable,protocolB) => RecursionFixedPoint(variable,consumeActionAuxiliary(protocolB))
         case Sequence(protocolA,protocolB) =>
           val pA = consumeActionAuxiliary(protocolA)
-          if pA == protocolA
+          if  pA == protocolA
           then Sequence(protocolA,consumeActionAuxiliary(protocolB))
           else Sequence(pA,protocolB)
         case Parallel(protocolA,protocolB) => Parallel(consumeActionAuxiliary(protocolA),consumeActionAuxiliary(protocolB))
         case Choice  (protocolA,protocolB) => Choice  (consumeActionAuxiliary(protocolA),consumeActionAuxiliary(protocolB))
     end consumeActionAuxiliary
-    Simplifier(consumeActionAuxiliary(protocol)(using action))
+    StructuralCongruence(consumeActionAuxiliary(protocol)(using action))
   end consumeAction
-end SSSemantic
+end AsyncSemantic

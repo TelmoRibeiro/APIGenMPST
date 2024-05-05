@@ -1,6 +1,6 @@
 package mpst.encoding
 
-import mpst.operational_semantic.SSSemantic
+import mpst.operational_semantic.AsyncSemantic
 import mpst.syntax.Protocol
 import mpst.utilities.Environment.*
 import mpst.utilities.Types.*
@@ -18,12 +18,12 @@ object NoEncoding:
       lazyTraverse(next.tail,visited)
       return
     println()
-    val children = SSSemantic.next(nextLocal)
+    val children = AsyncSemantic.next(nextLocal)
     lazyTraverse(children ++ next.tail,visited + next.head)
   end lazyTraverse
 
   def apply(local:Protocol):Unit =
     val environment = getEnvironment(local)(using Map())
-    lazyTraverse(SSSemantic.next(local)(using environment),Set())(using environment)
+    lazyTraverse(AsyncSemantic.next(local)(using environment),Set())(using environment)
   end apply
 end NoEncoding

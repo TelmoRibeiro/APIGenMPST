@@ -8,7 +8,7 @@ import mpst.utilities.Types.*
   - check well-formedness on *recursion*
     - a loop is dependently guarded if:
       - for all actions l
-      - the loop body can only *partially *terminate* for l
+      - the loop body can only *partially terminate* for l
       - if l does not occur in the loop body at all
     - other words:
       - if a participant occurs in some branch of the loop
@@ -19,11 +19,11 @@ import mpst.utilities.Types.*
 */
 
 object DependentlyGuarded:
-  private def isDependentlyGuarded(global:Protocol):Boolean =
+  private def isDependentlyGuarded(global:Global):Boolean =
     global match
       case Interaction(_, _, _, _) => true
       case RecursionCall(_) => true
-      case End => true
+      case Skip => true
       case Sequence(globalA,globalB) => isDependentlyGuarded(globalA) && isDependentlyGuarded(globalB)
       case Parallel(globalA,globalB) => isDependentlyGuarded(globalA) && isDependentlyGuarded(globalB)
       case Choice  (globalA,globalB) => isDependentlyGuarded(globalA) && isDependentlyGuarded(globalB)
@@ -45,21 +45,19 @@ object DependentlyGuarded:
         then None
         else Some(global)
       case RecursionCall(_) => Some(global)
-      case End => Some(global)
+      case Skip => Some(global)
       case Sequence(globalA,globalB) =>
         val maybeGlobalA = checkDependentlyGuarded(globalA,agent)
         val maybeGlobalB = checkDependentlyGuarded(globalB,agent)
         maybeGlobalA -> maybeGlobalB match
-          case None -> _ => None
-          case _ -> None => None
           case Some(gA) -> Some(gB) => Some(Sequence(gA,gB))
+          case _ -> _ => None
       case Parallel(globalA,globalB) =>
         val maybeGlobalA = checkDependentlyGuarded(globalA,agent)
         val maybeGlobalB = checkDependentlyGuarded(globalB,agent)
         maybeGlobalA -> maybeGlobalB match
-          case None -> _ => None
-          case _ -> None => None
           case Some(gA) -> Some(gB) => Some(Parallel(gA,gB))
+          case _ -> _ => None
       case Choice(globalA,globalB) =>
         val maybeGlobalA = checkDependentlyGuarded(globalA,agent)
         val maybeGlobalB = checkDependentlyGuarded(globalB,agent)
@@ -71,7 +69,7 @@ object DependentlyGuarded:
         val maybeGlobalB = checkDependentlyGuarded(globalB,agent)
         maybeGlobalB match
           case Some(gB) => Some(gB)
-          case _ => Some(End)
+          case _ => Some(Skip) // @ telmo - TO CHECK
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end checkDependentlyGuarded
 

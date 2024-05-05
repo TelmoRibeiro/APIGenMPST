@@ -77,11 +77,11 @@ object Parser extends RegexParsers:
     }
   end message
 
-  private def end: Parser[Protocol] = "end" ^^^ End
+  private def end: Parser[Protocol] = "end" ^^^ Skip // @ telmo - to check!
 
-  def apply(input: String): Protocol =
+  def apply(input:String):Protocol =
     parseAll(globalType, input) match
-      case Success(global, _) => global
-      case _                  => throw new RuntimeException(s"parsing failed\n")
+      case Success(global,_) => global
+      case failure:NoSuccess => throw new RuntimeException(s"parsing failed with msg=[${failure.msg}] and next=[${failure.next}]\n")
   end apply
 end Parser

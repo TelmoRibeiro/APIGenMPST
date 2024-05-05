@@ -1,7 +1,7 @@
 package mpst.testing
 
 import mpst.encoding.NoEncoding
-import mpst.projection.Projection
+import mpst.projection.AsyncProjection
 import mpst.syntax.Parser
 import mpst.syntax.Protocol
 
@@ -58,7 +58,7 @@ object Tests:
       val global: Protocol = Parser(protocol)
       println(s"GLOBAL TYPE: $global")
       // should run analysis here!
-      for agent -> local <- Projection.projectionWithAgent(global) yield
+      for agent -> local <- AsyncProjection.projectionWithAgent(global) yield
         println(s"LOCAL TYPE ($agent): $local")
         NoEncoding(local)
         println()

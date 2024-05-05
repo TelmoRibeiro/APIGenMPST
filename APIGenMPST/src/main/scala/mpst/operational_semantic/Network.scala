@@ -5,27 +5,62 @@ import mpst.syntax.Protocol.*
 import mpst.utilities.Multiset
 import mpst.utilities.Types.*
 
-
 /* IDEA:
+  - SyncNetworkMS is being experimented upon
 
   @ telmo -
-    causal network comes from choreo
+    problem: Environment is global
+    causal network initially from choreo
+    unrelated: MSyncST - projection erases parallel | Gentle - parallel is never defined
 */
 
 object Network:
-  // Multiparty Synchronous Session Types: projection erases Parallel
-  // A Very Gentle Introduction to Multiparty Session Types: does not support Parallel at all 
-  object SyncNetworkMultiset:
-    def nextNetwork(locals:Set[Protocol],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Multiset[Action])] =
+  object NetworkMultiset:
+    def nextNetwork(locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Local],Multiset[Action])] =
       val nextNetwork = for local <- locals yield
-        val nextEntry = getNextEntry(local,locals,pending)
-          for (nextAction,nextLocal,nextPending) <- nextEntry yield
-            val nextLocals = locals-local+nextLocal
-            (nextAction,nextLocals,nextPending)
+        val nextEntry = getNextEntry(local,pending)
+        for (nextAction,nextLocal,nextPending) <- nextEntry yield
+          val nextLocals = locals-local+nextLocal
+          (nextAction,nextLocals,nextPending)
       nextNetwork.flatten
     end nextNetwork
 
-    private def getNextEntry(local:Local,locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Protocol,Multiset[Action])] =
+    private def getNextEntry(local:Local,pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Local,Multiset[Action])] =
+      for nextAction -> nextLocal <- AsyncSemantic.next(local) if notBlocked(nextAction,pending) yield
+        val nextPending = getNextPending(nextAction,pending)
+        (nextAction,nextLocal,nextPending)
+    end getNextEntry
+
+    private def getNextPending(action:Action,pending:Multiset[Action]):Multiset[Action] =
+      action match
+        case Send   (agentA,agentB,message,sort) => pending + Send(agentA,agentB,message,sort)
+        case Receive(agentA,agentB,message,sort) => pending - Send(agentB,agentA,message,sort)
+        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
+    end getNextPending
+
+    private def notBlocked(action:Action,pending:Multiset[Action]):Boolean =
+      action match
+        case Send   (_, _, _, _) => true
+        case Receive(agentA,agentB,message,sort) => pending `contains` Send(agentB, agentA, message, sort)
+        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
+    end notBlocked
+  end NetworkMultiset
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  object SyncNetworkMultiset:
+    // map or 2 seq
+    // ms vs cn vs #sessions
+    def nextNetwork(locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Local],Multiset[Action])] =
+      val nextNetwork = for local <- locals yield
+        val nextEntry = getNextEntry(local,locals,pending)
+        for (nextAction,nextLocal,nextPending) <- nextEntry yield
+          val nextLocals = locals-local+nextLocal
+          (nextAction,nextLocals,nextPending)
+      nextNetwork.flatten
+    end nextNetwork
+
+    private def getNextEntry(local:Local,locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Local,Multiset[Action])] =
       for nextAction -> nextLocal <- SyncSemantic.next(local) if notBlocked(nextAction,locals,pending) yield
         val nextPending = getNextPending(nextAction,pending)
         (nextAction,nextLocal,nextPending)
@@ -46,7 +81,7 @@ object Network:
             val receives = for local <- locals yield
               for nextAction -> _ <- SyncSemantic.next(local) if nextAction == Receive(agentB,agentA,message,sort) yield nextAction
             val flatReceives = receives.flatten
-            println(s"ACTION: $action | RECEIVES: $flatReceives")
+            // println(s"ACTION: $action | RECEIVES: $flatReceives")
             flatReceives.nonEmpty
           case action => throw new RuntimeException(s"unexpected action found in [$action]\n")
       end canReceiveImmediately
@@ -57,43 +92,9 @@ object Network:
     end notBlocked
   end SyncNetworkMultiset
 
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  object NetworkMultiset:
-    def nextNetwork(locals:Set[Protocol],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Multiset[Action])] =
-      val nextNetwork = for local <- locals yield
-        val nextEntry = getNextEntry(local,pending)
-        for (nextAction,nextLocal,nextPending) <- nextEntry yield
-          val nextLocals = locals-local+nextLocal
-          (nextAction,nextLocals,nextPending)
-      nextNetwork.flatten
-    end nextNetwork
-
-    private def getNextEntry(local:Protocol,pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Protocol,Multiset[Action])] =
-      for nextAction -> nextLocal <- SSSemantic.next(local) if notBlocked(nextAction,pending) yield
-        val nextPending = getNextPending(nextAction,pending)
-        (nextAction,nextLocal,nextPending)
-    end getNextEntry
-
-    private def getNextPending(action:Action,pending:Multiset[Action]):Multiset[Action] =
-      action match
-        case Send   (agentA,agentB,message,sort) => pending + Send(agentA,agentB,message,sort)
-        case Receive(agentA,agentB,message,sort) => pending - Send(agentB,agentA,message,sort)
-        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
-    end getNextPending
-
-    private def notBlocked(action:Action,pending:Multiset[Action]):Boolean =
-      action match
-        case Send   (_, _, _, _) => true
-        case Receive(agentA,agentB,message,sort) => pending `contains` Send(agentB, agentA, message, sort)
-        case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
-    end notBlocked
-  end NetworkMultiset
-
   private type Queue = Map[(Agent,Agent),List[Message]]
   object NetworkCausal:
-    def nextNetwork(locals:Set[Protocol],pending:Queue)(using environment:Map[Variable,Protocol]):Set[(Action,Set[Protocol],Queue)] =
+    def nextNetwork(locals:Set[Local],pending:Queue)(using environment:Map[Variable,Protocol]):Set[(Action,Set[Local],Queue)] =
       val nextNetwork = for local <- locals yield
         val nextEntry = getNextEntry(local,pending)
         for (nextAction,nextLocal,nextNetwork) <- nextEntry yield
@@ -102,8 +103,8 @@ object Network:
       nextNetwork.flatten
     end nextNetwork
 
-    private def getNextEntry(local:Protocol,pending:Queue)(using environment:Map[Variable,Protocol]):Set[(Action,Protocol,Queue)] =
-      for nextAction -> nextLocal <- SSSemantic.next(local) if notBlocked(nextAction,pending) yield
+    private def getNextEntry(local:Local,pending:Queue)(using environment:Map[Variable,Protocol]):Set[(Action,Local,Queue)] =
+      for nextAction -> nextLocal <- AsyncSemantic.next(local) if notBlocked(nextAction,pending) yield
         val nextPending = getNextPending(nextAction,pending)
         (nextAction,nextLocal,nextPending)
     end getNextEntry

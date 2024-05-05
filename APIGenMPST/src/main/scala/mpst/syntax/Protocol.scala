@@ -12,8 +12,7 @@ enum Protocol:
       case Send   (agentA,agentB,message,sort) => s"$agentA$agentB!$message<$sort>"
       case Receive(agentA,agentB,message,sort) => s"$agentA$agentB?$message<$sort>"
       case RecursionCall(variable) => s"$variable"
-      // case Skip => s"skip"
-      case End  => s"end"
+      case Skip => s"skip"
       case Sequence(protocolA,protocolB) => s"$protocolA ; $protocolB"
       case Parallel(protocolA,protocolB) => s"($protocolA || $protocolB)"
       case Choice  (protocolA,protocolB) => s"($protocolA + $protocolB)"
@@ -24,8 +23,7 @@ enum Protocol:
   case Send       (agentA:Agent,agentB:Agent,message:Message,sort:Sort)
   case Receive    (agentA:Agent,agentB:Agent,message:Message,sort:Sort)
   case RecursionCall(variable:Variable)
-  // case Skip
-  case End
+  case Skip
   case Sequence(protocolA:Protocol,protocolB:Protocol)
   case Parallel(protocolA:Protocol,protocolB:Protocol)
   case Choice  (protocolA:Protocol,protocolB:Protocol)
@@ -39,8 +37,7 @@ object Protocol:
       case Send   (_,_,_,_) => false
       case Receive(_,_,_,_) => false
       case RecursionCall(_) => true
-      // case Skip => true
-      case End  => true
+      case Skip => true
       case Sequence(protocolA,protocolB) => isGlobal(protocolA) && isGlobal(protocolB)
       case Parallel(protocolA,protocolB) => isGlobal(protocolA) && isGlobal(protocolB)
       case Choice  (protocolA,protocolB) => isGlobal(protocolA) && isGlobal(protocolB)
@@ -53,8 +50,7 @@ object Protocol:
       case Send   (_,_,_,_) => true
       case Receive(_,_,_,_) => true
       case RecursionCall(_) => true
-      // case Skip => true
-      case End  => true
+      case Skip => true
       case Sequence(protocolA,protocolB) => isLocal(protocolA) && isLocal(protocolB)
       case Parallel(protocolA,protocolB) => isLocal(protocolA) && isLocal(protocolB)
       case Choice  (protocolA,protocolB) => isLocal(protocolA) && isLocal(protocolB)
@@ -67,8 +63,7 @@ object Protocol:
       case Send   (agentA,agentB,_,_) => (Set() + agentA) + agentB
       case Receive(agentA,agentB,_,_) => (Set() + agentA) + agentB
       case RecursionCall(_) => Set()
-      // case Skip => Set()
-      case End  => Set()
+      case Skip => Set()
       case Sequence(protocolA,protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
       case Parallel(protocolA,protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
       case Choice  (protocolA,protocolB) => getAgents(protocolA) ++ getAgents(protocolB)
