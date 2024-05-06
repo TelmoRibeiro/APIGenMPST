@@ -2,15 +2,15 @@
 package mpst.web_animator
 
 import mpst.operational_semantic.Network.*
-import mpst.projection.SyncProjection.*
+import mpst.projection.*
 import mpst.syntax.Parser
 import mpst.syntax.Protocol
-import mpst.utilities.Environment.*
+import mpst.syntax.Type.*
+import mpst.utilities.Environment
 import mpst.utilities.Multiset
-import mpst.utilities.Types.*
 import mpst.wellformedness.*
-import org.scalajs.dom
 
+import org.scalajs.dom
 import org.scalajs.dom.{HTMLParagraphElement, MouseEvent, document, html}
 
 object Main:
@@ -26,7 +26,7 @@ object Main:
     parentNode.appendChild(paragraph)
   end addParagraph
 
-  private def selectAction(buttonIndex:Int,trace:List[Action],network:Set[(Action,Set[Protocol],Multiset[Action])])(using environment:Map[Variable,Protocol]):Unit =
+  private def selectAction(buttonIndex:Int,trace:List[Action],network:Set[(Action,Set[(Agent,Local)],Multiset[Action])])(using environment:Map[Agent,Map[Variable,Protocol]]):Unit =
     if network.isEmpty then
       addParagraph(s"FINAL TRACE: $trace",document.body)
       return
@@ -36,7 +36,7 @@ object Main:
     networkMSTraverse(locals,pending,trace :+ action)
   end selectAction
 
-  private def addActionButton(label:String,index:Int,trace:List[Action],network:Set[(Action,Set[Protocol],Multiset[Action])])(using environment:Map[Variable,Protocol]):Unit =
+  private def addActionButton(label:String,index:Int,trace:List[Action],network:Set[(Action,Set[(Agent,Local)],Multiset[Action])])(using environment:Map[Agent,Map[Variable,Protocol]]):Unit =
     val button = document.createElement("button").asInstanceOf[html.Button]
     button.textContent = label
     button.onclick     = (_:dom.MouseEvent) => {
@@ -45,10 +45,10 @@ object Main:
     document.body.appendChild(button)
   end addActionButton
 
-  private def networkMSTraverse(locals:Set[Protocol],pending:Multiset[Action],trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
-    val nextNetwork = Sync.nextNetwork(locals,pending)
+  private def networkMSTraverse(locals:Set[(Agent,Local)],pending:Multiset[Action],trace:List[Action])(using environment:Map[Agent,Map[Variable,Protocol]]):Unit =
+    val nextNetwork = NetworkMultiset.nextNetwork(locals,pending)
     for local <- locals yield
-      addParagraph(s"LOCAL: $local",document.body)
+      addParagraph(s"LOCAL[${local._1}]: ${local._2}",document.body)
     var actionIndex = 0
     for (nextAction,_,_) <- nextNetwork yield
       addActionButton(nextAction.toString,actionIndex,trace,nextNetwork)
@@ -108,10 +108,10 @@ object Main:
     showGlobal(global.toString)
     val wellFormed = WellCommunicated(global) && WellBounded(global) && WellChannelled(global) && WellBranched(global) && DependentlyGuarded(global)
     showAnalysis(wellFormed)
-    for agent -> local <- projectionWithAgent(global) yield
-      showLocal(agent,local.toString)
-    val environment = getEnvironment(global)(using Map())
-    val locals      = projection(global)
+    val locals = for local <- AsyncProjection.projectionWithAgent(global) yield
+      showLocal(local._1,local._2.toString)
+      local
+    val environment = Environment.localEnv(global)
     networkMSTraverse(locals,Multiset(),Nil)(using environment)
   end main
 end Main
