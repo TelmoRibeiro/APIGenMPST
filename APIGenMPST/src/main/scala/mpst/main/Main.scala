@@ -1,10 +1,10 @@
-/*
 package mpst.main
 
 import mpst.operational_semantic.Network.*
-import mpst.projection.Projection.*
+import mpst.projection.SyncProjection.*
 import mpst.syntax.Parser
 import mpst.syntax.Protocol
+import mpst.syntax.Protocol.*
 import mpst.utilities.Environment.*
 import mpst.utilities.Multiset
 import mpst.utilities.Types.*
@@ -49,13 +49,36 @@ object Main:
     networkCSTraverse(ls,p,trace :+ a)
   end networkCSTraverse
 
+  @tailrec
+  private def syncTraverse(locals:Set[Local],trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
+    val nextAction -> nextLocals = Sync.next(locals)
+    for local <- locals yield
+      println(s"local $local")
+    println()
+    println(s"ACTION: $nextAction")
+    for local <- nextLocals yield
+      println(s"local: $local")
+    println()
+    println(s"trace: ${trace :+ nextAction}")
+    var done = true
+    for local <- nextLocals yield
+    if local != Skip then done = false
+    if done then return
+    syncTraverse(nextLocals,trace :+ nextAction)
+  end syncTraverse
+
   def main(args: Array[String]): Unit =
-    // Tests()
-    // val protocol = "(wA>m:Done<void> + m>wA:Done<void>)" // not accepted by me but accepted by oven
-    // val protocol = "(m>wA:Done<void> + m>wB:Done<void>)" // not accepted by me or oven but accepted by choreo
-    // val protocol = "(m>wA:Done<void> + (m>wA:NotDone<void> ; (m>wB:Done<void> + m>wB:NotDone<void>)))" accepted by me but not oven
-    // val protocol = "s>b:Descr<void> ; s>b:Price<void> ; (s>b:Acc<void> + s>b:Rej<void>) ; end" // should and it is accepted
-    val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; (wA>m:Done<void> ; end || wB>m:Done<void> ; end)" // should and it is accepted
+    // val protocol = "(wA>m:Done<void> + m>wA:Done<void>)"
+      // not accepted by me but accepted by oven
+    // val protocol = "(m>wA:Done<void> + m>wB:Done<void>)"
+      // not accepted by me or oven but accepted by choreo
+    // val protocol = "(m>wA:Done<void> + (m>wA:NotDone<void> ; (m>wB:Done<void> + m>wB:NotDone<void>)))"
+      // accepted by me but not oven
+    // val protocol = "s>b:Descr<void> ; s>b:Price<void> ; (s>b:Acc<void> + s>b:Rej<void>) ; end"
+      // should and it is accepted
+    // val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; (wA>m:Done<void> ; end || wB>m:Done<void> ; end)"
+      // should and it is accepted
+    val protocol = "m>wA:Work<void> ; m>wB:Work<void> ; wA>m:Done<void> ; wB>m:Done<void> ; end"
     println(s"PROTOCOL: $protocol")
     val global = Parser(protocol)
     println(s"GLOBAL: $global")
@@ -65,8 +88,6 @@ object Main:
       println(s"LOCAL [$agent] - $local")
     val locals = projection(global)
     val environment = getEnvironment(global)(using Map())
-    networkMSTraverse(locals,Multiset(),Nil)(using environment)
-    //networkCSTraverse(locals,Map(),Nil)(using environment)
+    syncTraverse(locals,Nil)(using environment)
   end main
 end Main
-*/

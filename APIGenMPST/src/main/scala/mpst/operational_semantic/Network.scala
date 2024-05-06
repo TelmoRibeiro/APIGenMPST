@@ -48,9 +48,52 @@ object Network:
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  object SyncNetworkMultiset:
+  object Sync:
     // map or 2 seq
     // ms vs cn vs #sessions
+    private def getSend(locals:Set[Local])(using environment:Map[Variable,Local]):(Action,Local,Local) =
+      def canSend(action:Action,locals:Set[Local]):Boolean =
+        action match
+          case Send(agentA,agentB,message,sort) =>
+            val recvs = for local <- locals yield
+              for recvAction -> _ <- SyncSemantic.next(local) if recvAction == Receive(agentB,agentA,message,sort) yield
+                recvAction
+            val flatRecvs = recvs.flatten
+            if flatRecvs.size > 1 then throw new RuntimeException(s"unexpected ambiguous receives in [$flatRecvs]\n")
+            flatRecvs.nonEmpty
+          case _ => false
+      end canSend
+      val next = for local <- locals yield
+        for nextAction -> nextLocal <- SyncSemantic.next(local) if canSend(nextAction,locals) yield
+          (nextAction,local,nextLocal)
+      val flattenNext = next.flatten
+      flattenNext.head
+    end getSend
+
+    private def getRecv(locals:Set[Local],send:Action)(using environment:Map[Variable,Local]):(Action,Local,Local) =
+      def isMatchingRecv(action:Action,send:Action):Boolean =
+        action match
+          case Receive(agentA,agentB,message,sort) if send == Send(agentB,agentA,message,sort) => true
+          case _  => false
+      end isMatchingRecv
+      val next = for local <- locals yield
+        for nextAction -> nextLocal <- SyncSemantic.next(local) if isMatchingRecv(nextAction,send) yield
+          (nextAction,local,nextLocal)
+      val flattenNext = next.flatten
+      if flattenNext.size != 1 then throw new RuntimeException(s"unexpected ambiguous actions found in [$flattenNext]\n") // @ telmo - maybe I do not need to worry with this here
+      flattenNext.head
+    end getRecv
+
+    def next(locals:Set[Local])(using environment:Map[Variable,Local]):(Action,Set[Local]) =
+      val (sendNextAction,sendLocal,sendNextLocal) = getSend(locals)
+      val (recvNextAction,recvLocal,recvNextLocal) = getRecv(locals,sendNextAction)
+      val nextLocals = locals - sendLocal - recvLocal + sendNextLocal + recvNextLocal
+      sendNextAction -> nextLocals
+    end next
+  end Sync
+
+  @deprecated
+  object OldSync:
     def nextNetwork(locals:Set[Local],pending:Multiset[Action])(using environment:Map[Variable,Protocol]):Set[(Action,Set[Local],Multiset[Action])] =
       val nextNetwork = for local <- locals yield
         val nextEntry = getNextEntry(local,locals,pending)
@@ -90,7 +133,7 @@ object Network:
         case Receive(agentA,agentB,message,sort) => pending `contains` Send(agentB,agentA,message,sort)
         case protocol => throw new RuntimeException(s"unexpected protocol found in [$protocol]\n")
     end notBlocked
-  end SyncNetworkMultiset
+  end OldSync
 
   private type Queue = Map[(Agent,Agent),List[Message]]
   object NetworkCausal:

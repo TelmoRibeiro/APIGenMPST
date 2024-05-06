@@ -1,3 +1,4 @@
+/*
 package mpst.web_animator
 
 import mpst.operational_semantic.Network.*
@@ -45,7 +46,7 @@ object Main:
   end addActionButton
 
   private def networkMSTraverse(locals:Set[Protocol],pending:Multiset[Action],trace:List[Action])(using environment:Map[Variable,Protocol]):Unit =
-    val nextNetwork = SyncNetworkMultiset.nextNetwork(locals,pending)
+    val nextNetwork = Sync.nextNetwork(locals,pending)
     for local <- locals yield
       addParagraph(s"LOCAL: $local",document.body)
     var actionIndex = 0
@@ -114,3 +115,4 @@ object Main:
     networkMSTraverse(locals,Multiset(),Nil)(using environment)
   end main
 end Main
+*/
