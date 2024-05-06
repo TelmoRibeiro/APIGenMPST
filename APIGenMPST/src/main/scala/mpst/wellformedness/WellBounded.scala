@@ -2,18 +2,17 @@ package mpst.wellformedness
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Types.*
+import mpst.syntax.Type.*
 
 /*
   IDEA:
     - checks well-formedness on *recursion*
       - is every recursion variable bounded?
       - different branches of parallel can't use the same variable
-        - LessIsMore
+        - from LessIsMore
 
-  @ telmo -
+  problem:
     are we bothered by unused variables?
-    are we bothered by Seq(End,...)?
 
     prof. Jose Proença checks WellBounded
       through communication graphs
@@ -23,7 +22,7 @@ import mpst.utilities.Types.*
 */
 
 object WellBounded:
-  private def getFreeVariables(global:Protocol)(using declaredVariables:Set[Variable]):Set[Variable] =
+  private def getFreeVariables(global:Global)(using declaredVariables:Set[Variable]):Set[Variable] =
     global match
       case Interaction(_,_,_,_) => Set()
       case RecursionCall(variable) =>
@@ -38,7 +37,7 @@ object WellBounded:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end getFreeVariables
 
-  def apply(global:Protocol):Boolean =
+  def apply(global:Global):Boolean =
     val freeVariables = getFreeVariables(global)(using Set())
     if  freeVariables.nonEmpty then throw new RuntimeException(s"unexpected free variables [$freeVariables] in [$global]\n")
     true

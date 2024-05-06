@@ -2,19 +2,17 @@ package mpst.wellformedness
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.syntax.Type.*
 
 /* IDEA:
-  - do not allow p->p:m<s>
-    - many references avoiding it
+  - do not allow self-communication
+    - in other words: do not allow p>p:m<s>
 
-  @ telmo -
-    naive!
-      can I not do it at "parse time"?
-      at least merge with other Well-Something for optimisation!
+  problem: performance suffers from this naive solution and some works deal with it during Projection
 */
 
 object WellCommunicated:
-  private def isWellCommunicated(global:Protocol):Boolean =
+  private def isWellCommunicated(global:Global):Boolean =
     global match
       case Interaction(agentA,agentB,_,_) => agentA != agentB
       case RecursionCall(_) => true
@@ -26,7 +24,7 @@ object WellCommunicated:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isWellCommunicated
 
-  def apply(global:Protocol):Boolean =
+  def apply(global:Global):Boolean =
     isWellCommunicated(global)
   end apply
 end WellCommunicated

@@ -2,15 +2,14 @@ package mpst.projection
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.syntax.Type.*
 import mpst.utilities.StructuralCongruence
-import mpst.utilities.Types.*
 
 /* IDEA:
   - allow the projection of *global types* into *local types*
   - this new version was not yet tested
 
-  @ telmo -
-    add error in error handler
+  problem: map to papers
 */
 
 object AsyncProjection:

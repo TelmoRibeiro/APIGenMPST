@@ -1,29 +1,23 @@
 package mpst.wellformedness
 
-import mpst.operational_semantic.AsyncSemantic
-import mpst.projection.AsyncProjection
-import mpst.projection.AsyncProjection.*
+import mpst.operational_semantic.MPSTSemantic
+import mpst.projection.SyncProjection.*       // @ telmo - testing for Sync
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.syntax.Type.*
 import mpst.utilities.Environment.*
-import mpst.utilities.Types.*
 
 /* IDEA:
-
-  @ telmo -
-    add better error handling and expand it for every error
-    ASSUMES AS INPUT THE WHOLE ORIGINAL GLOBAL TYPE
-      in order to reduce I need the environment
-      in order to get the environment I need every X -> GlobalBit in "def X in (GlobalBit)"
-      can I safely assume a X -> Something?
+  - check well-formedness on *choice*
+  - @ telmo - expand this
 */
 
 object WellBranched:
-  private def isWellBranched(global:Protocol)(using environment:Map[String,Protocol]):Boolean =
+  private def isWellBranched(global:Global)(using environment:Map[String,Global]):Boolean =
     global match
       case Interaction(_,_,_,_) => true
       case RecursionCall(_)     => true
-      case Skip => true
+      case Skip                 => true
       case Sequence(globalA,globalB) => isWellBranched(globalA) && isWellBranched(globalB)
       case Parallel(globalA,globalB) => isWellBranched(globalA) && isWellBranched(globalB)
       case Choice  (globalA,globalB) => checkWellBranched(globalA,globalB) && isWellBranched(globalA) && isWellBranched(globalB)
@@ -31,10 +25,10 @@ object WellBranched:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isWellBranched
 
-  private def checkWellBranched(globalA:Protocol,globalB:Protocol)(using environment:Map[Variable,Protocol]):Boolean =
+  private def checkWellBranched(globalA:Global,globalB:Global)(using environment:Map[Variable,Global]):Boolean =
     // @ telmo - nextActionsX = actions produced in reducing globalX
-    val nextActionsA = for actionsA -> stateA <- AsyncSemantic.next(globalA) yield actionsA
-    val nextActionsB = for actionsB -> stateB <- AsyncSemantic.next(globalB) yield actionsB
+    val nextActionsA = for actionsA -> stateA <- MPSTSemantic.next(globalA) yield actionsA
+    val nextActionsB = for actionsB -> stateB <- MPSTSemantic.next(globalB) yield actionsB
     val selectors = for case Send(agentA,_,_,_) <- nextActionsA ++ nextActionsB yield agentA
     if selectors.isEmpty  then throw new RuntimeException(s"no selector in [$globalA] and [$globalB]\n")
     if selectors.size > 1 then throw new RuntimeException(s"multiple selectors in [$globalA] and [$globalB]\n")
@@ -68,14 +62,14 @@ object WellBranched:
     true
   end checkWellBranched
 
-  private def receivingActions(global:Protocol,sendingActions:Set[(Agent,Message)])(using environment:Map[Variable,Protocol]):Set[(Agent,Message)] =
-    for agent -> local <- AsyncProjection.projectionWithAgent(global)
-        case Receive(agent,selector,message,_) -> _ <- AsyncSemantic.next(local) if sendingActions contains agent -> message
+  private def receivingActions(global:Global,sendingActions:Set[(Agent,Message)])(using environment:Map[Variable,Global]):Set[(Agent,Message)] =
+    for agent -> local <- projectionWithAgent(global)
+        case Receive(agent,selector,message,_) -> _ <- MPSTSemantic.next(local) if sendingActions contains agent -> message
     yield agent -> message
   end receivingActions
 
-  def apply(global:Protocol):Boolean =
-    val environment = getEnvironment(global)(using Map())
+  def apply(global:Global):Boolean =
+    val environment = globalEnv(global)
     isWellBranched(global)(using environment)
 end WellBranched
 

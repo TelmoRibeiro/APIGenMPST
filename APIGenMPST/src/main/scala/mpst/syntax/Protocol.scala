@@ -1,9 +1,12 @@
 package mpst.syntax
 
-import mpst.utilities.Types.*
+import mpst.syntax.Type.{Agent,Message,Sort,Variable}
 
-// type Protocol = Local | Global
-// extend to sync
+/* IDEA:
+  - protocol basics...
+
+  problem: should Interaction(_,_,_,_) be considered an action as well?
+*/
 
 enum Protocol:
   override def toString:String =
@@ -56,6 +59,13 @@ object Protocol:
       case Choice  (protocolA,protocolB) => isLocal(protocolA) && isLocal(protocolB)
       case RecursionFixedPoint(_,protocolB) => isLocal(protocolB)
   end isLocal
+
+  def isAction(protocol:Protocol):Boolean =
+    protocol match
+      case Send   (_,_,_,_) => true
+      case Receive(_,_,_,_) => true
+      case _ => false
+  end isAction
 
   def getAgents(protocol:Protocol):Set[Agent] =
     protocol match

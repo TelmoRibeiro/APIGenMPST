@@ -2,7 +2,7 @@ package mpst.wellformedness
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Types.*
+import mpst.syntax.Type.*
 
 /* IDEA:
   - check well-formedness (linearity?) on *parallel* branches
@@ -11,15 +11,15 @@ import mpst.utilities.Types.*
     - otherwise communications are secure since they are independent
     - error = "possible dependent communications in branch [globalA] and [globalB] caused by the shared channels [sharedChannels]"
 
-  @ telmo -
-    can we not relax this condition?
-    there is no cases where shared channels are not risky?
-    not even trying to disambiguate by message and sort that pass in the channel
-    extend to the other definition (Honda et al)
+    problem:
+      can we not relax this condition?
+      there is no cases where shared channels are not risky?
+      not even trying to disambiguate by message and sort that pass in the channel
+      extend to the other definition (Honda et al)
 */
 
 object WellChannelled:
-  private def isWellChannelled(global:Protocol):Boolean =
+  private def isWellChannelled(global:Global):Boolean =
     global match
       case Interaction(_,_,_,_) => true
       case RecursionCall(_) => true
@@ -29,16 +29,14 @@ object WellChannelled:
         val channelsA = channels(globalA)
         val channelsB = channels(globalB)
         val sharedChannels = channelsA intersect channelsB
-        if sharedChannels.isEmpty
-        then true
-        else throw new RuntimeException(s"possible dependent communications in branch [$globalA] and [$globalB] caused by the shared channels [$sharedChannels]\n")
+        if sharedChannels.nonEmpty then throw new RuntimeException(s"possible dependent communications in branch [$globalA] and [$globalB] caused by the shared channels [$sharedChannels]\n")
+        sharedChannels.isEmpty
       case Choice(globalA,globalB) => isWellChannelled(globalA) && isWellChannelled(globalB)
       case RecursionFixedPoint(_,globalB) => isWellChannelled(globalB)
-      case local => throw new RuntimeException(s"unexpected local type found in [$local\n]")
+      case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isWellChannelled
 
-  // @ telmo - maybe rename branch to global or even protocol and serve it as an util?
-  private def channels(branch:Protocol):Set[(Agent,Agent)] =
+  private def channels(branch:Global):Set[(Agent,Agent)] =
     branch match
       case Interaction(agentA,agentB,_,_) => Set() + (agentA -> agentB)
       case RecursionCall(_) => Set()
@@ -50,7 +48,7 @@ object WellChannelled:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end channels
 
-  def apply(global:Protocol):Boolean =
+  def apply(global:Global):Boolean =
     isWellChannelled(global)
   end apply
 end WellChannelled

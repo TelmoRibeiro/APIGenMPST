@@ -2,7 +2,7 @@ package mpst.wellformedness
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
-import mpst.utilities.Types.*
+import mpst.syntax.Type.*
 
 /* IDEA:
   - check well-formedness on *recursion*
@@ -14,8 +14,7 @@ import mpst.utilities.Types.*
       - if a participant occurs in some branch of the loop
       - it must occur in all branches of the loop
 
-  @ telmo -
-    test this!
+  problem: not yet tested
 */
 
 object DependentlyGuarded:
@@ -38,7 +37,7 @@ object DependentlyGuarded:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end isDependentlyGuarded
 
-  private def checkDependentlyGuarded(global:Protocol, agent:Agent):Option[Protocol] =
+  private def checkDependentlyGuarded(global:Global,agent:Agent):Option[Global] =
     global match
       case Interaction(agentA,agentB,_, _) =>
         if agent == agentA || agent == agentB
@@ -73,7 +72,7 @@ object DependentlyGuarded:
       case local => throw new RuntimeException(s"unexpected local type found in [$local]\n")
   end checkDependentlyGuarded
 
-  def apply(global:Protocol):Boolean =
+  def apply(global:Global):Boolean =
     isDependentlyGuarded(global)
   end apply
 end DependentlyGuarded

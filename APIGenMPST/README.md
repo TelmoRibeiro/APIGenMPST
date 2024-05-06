@@ -13,20 +13,18 @@ sbt run
 ___
 
 ### To Do:
-1) Fix Projection
-2) Relax WSFI Semantic
-3) Merge Projectability Definitions (**Better Performance**)
-4) Develop Show (**pretty print**)
-5) Extend example's list
-6) Try to tail-recurse most functions
-7) Optimize binary to limitless
+- Actual Error Handling / PP
+- Fix Use of Async vs Sync Interchangeably
+- Taus? Oven and Choreo does it
+- Fix AsyncProjection
+- Add WSSemantic
+- Merge Projectability Definitions (**Better Performance**)
+- Develop Show (**pretty print**)
+- Extend example's list
+- Try to tail-recurse most functions
 ___
 
-### Notes:
-> Interactions can be (reasonably) extended in order to allow for Asserted Multiparty Session Types:  
-> actorA>actorB:l(x: S){A} where   
-> l     => branch label   
-> x : S => interaction variable (x) of sort (S)  
-> A     => assertion  
-> example: C>A:Login(x: string){tt}  
+### Notes: 
+- there is no mention of tail recursion in MSyncST
+- MSyncST - projection erases parallel | Gentle - parallel is never defined
 ___

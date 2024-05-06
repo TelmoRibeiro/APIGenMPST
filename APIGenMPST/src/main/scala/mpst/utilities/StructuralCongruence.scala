@@ -8,14 +8,11 @@ import scala.annotation.tailrec
   - attempt to make the now @deprecated "Simplifier" concise
   - only structural congruence
 
-  @ telmo -
+  problem:
     yet to be tested
     Sequence(End,_) should be a wellformedness requirement
     NonGuarded      should be a wellformedness requirement
-    check well formedness on recursion ( terminal case + recursive case )
-    but the recommended paper allows snd!data ; std!date ; snd?{ok ; std!ok ; date; X, notok ; std!notok ; X}
-
-    not related: choreo and oven works with taus
+    check well formedness for recursion ( terminal case + recursive case )
     not related: xor and & can be derived by ! and ?
 */
 

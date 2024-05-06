@@ -2,18 +2,16 @@ package mpst.projection
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.syntax.Type.*
 import mpst.utilities.StructuralCongruence
-import mpst.utilities.Types.*
 
 /* IDEA:
   - allow the projection of *global types* into *local types*
   - "Multiparty Synchronous Session Types"-ish projection
 
-  @ telmo
-    - NEED TO TEST PROJECTION WITH RECURSION
-    - ADD NON-GUARDED RECURSION RULE FROM GENTLE APPROACH...?
-    - ADD ERRORS TO ERROR HANDLING
-    - not related: there is no mention of tail recursion in MSyncST
+  problem:
+    test with recursion
+    ADD NON-GUARDED RECURSION RULE FROM GENTLE APPROACH...?
 */
 
 object SyncProjection:

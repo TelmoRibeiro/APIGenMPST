@@ -5,6 +5,7 @@ import mpst.projection.AsyncProjection
 import mpst.syntax.Parser
 import mpst.syntax.Protocol
 
+@deprecated
 object Tests:
   // Standard Testing //
   private val testList: List[(String, List[String])] =
@@ -60,7 +61,7 @@ object Tests:
       // should run analysis here!
       for agent -> local <- AsyncProjection.projectionWithAgent(global) yield
         println(s"LOCAL TYPE ($agent): $local")
-        NoEncoding(local)
+        // NoEncoding(local)
         println()
       println()
       println()

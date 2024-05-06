@@ -2,36 +2,46 @@ package mpst.operational_semantic
 
 import mpst.syntax.Protocol
 import mpst.syntax.Protocol.*
+import mpst.syntax.Type.*
 import mpst.utilities.StructuralCongruence
-import mpst.utilities.Types.*
 
-object SyncSemantic:
+/* IDEA:
+  - attempt at a strong sequencing semantic - original idea stated in Choreo
+
+  @ telmo -
+    RecursionCall is quite hacky!
+*/
+
+object MPSTSemantic:
   def accept(protocol:Protocol):Boolean =
-    SyncSemantic.acceptAuxiliary(protocol)
+    MPSTSemantic.acceptAuxiliary(protocol)
   end accept
 
   def next(protocol:Protocol)(using environment:Map[Variable,Protocol]):Set[(Action,Protocol)] =
-    SyncSemantic.nextAuxiliary(protocol).toSet
+    MPSTSemantic.nextAuxiliary(protocol).toSet
   end next
 
-  private def acceptAuxiliary(local:Protocol):Boolean =
-    local match
+  private def acceptAuxiliary(protocol:Protocol):Boolean =
+    protocol match
       case Interaction(_,_, _, _) => false
       case Send   (_,_,_,_) => false
       case Receive(_,_,_,_) => false
       case RecursionCall(_) => false // checked with prof. José Proença //
       case Skip             => true
-      case Sequence(localA,localB) => accept(localA) && accept(localB)
-      case Parallel(localA,localB) => accept(localA) && accept(localB)
-      case Choice  (localA,localB) => accept(localA) || accept(localB)
-      case RecursionFixedPoint(_,localB) => accept(localB)
+      case Sequence(protocolA,protocolB) => accept(protocolA) && accept(protocolB)
+      case Parallel(protocolA,protocolB) => accept(protocolA) && accept(protocolB)
+      case Choice  (protocolA,protocolB) => accept(protocolA) || accept(protocolB)
+      case RecursionFixedPoint(_,protocolB) => accept(protocolB)
   end acceptAuxiliary
 
   private def nextAuxiliary(protocol:Protocol)(using environment:Map[Variable,Protocol]):List[(Action,Protocol)] =
     protocol match
+      // @ telmo - Interaction(_,_,_,_) is a bit hacky but quite useful in WellBranched
+      // @ telmo - do I have any MPST paper supporting this?
       case Interaction(agentA,agentB,message,sort) => List(Send(agentA,agentB,message,sort) -> Receive(agentB,agentA,message,sort))
-      case Send   (agentA,agentB,message,sort) => List(protocol -> Skip) // @ telmo - avoid inserting "harmful" ends by inserting "harmless" skips
-      case Receive(agentA,agentB,message,sort) => List(protocol -> Skip) // @ telmo - avoid inserting "harmful" ends by inserting "harmless" skips
+      case Send   (agentA,agentB,message,sort) => List(protocol -> Skip)
+      case Receive(agentA,agentB,message,sort) => List(protocol -> Skip)
+      // @ telmo - RecursionCall(_) is quite hacky!
       case RecursionCall(variable) =>
         val protocolB = environment(variable)
         val nonRecursiveProtocolB = recursionFree(variable,protocolB)
@@ -96,4 +106,4 @@ object SyncSemantic:
     end consumeActionAuxiliary
     StructuralCongruence(consumeActionAuxiliary(protocol)(using action))
   end consumeAction
-end SyncSemantic
+end MPSTSemantic
