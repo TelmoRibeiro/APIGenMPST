@@ -10,6 +10,8 @@
 - exemple focus
 - Corinne/ Oven / Choreo / Jullien Lange, Emilio Tuosto, Nobbuko 
 
+# Sessao de Ciencia e Engenharia de Software INFORUM - Next Meeting
+
 # Semantics
 ### Previous Papers
 - Branching Pomsets
@@ -343,10 +345,42 @@ merge is an interesting concept, how can I extend it?
 ## DFA-based API Generation
 - DFA encoded as "state-as-classes" encoding
 - DFA encoded as "states-as-types-parameters"
-    - APIs with a smaller memory footprint
-    - match types
+- APIs with a smaller memory footprint
+- match types
 - Local Types as DFAs interpretation
 - first discorvered in [11]
 - "final states of the interpretations of L1,...,Ln are superimposed to form a single new final state."
 - [L1||L2]DFA is well-defined due to the well-formedness requirement that the sets of send and receives that occur in L1 and L2 are disjoint - verify this
 ### DFA to APIs - Using Classes
+- [19] as the first DFA encoding
+- the "trick" then, it to structure the API in such a way that when the compiler sucessfully type-checks the API's usage, it has effectively performed an accepting run of [L]_DFA for every possible sequence of sends and receives by P.
+- encoding states as class \<r\>$\<s\> where \<r\> and \<s\> are identifiers for r and s (and \$ is a meaningless separator)
+- every transition delta(s,sigma) is encoded as a method of class \<r\>$<s\> to perform action sigma and provide an instance of class \<r\>\$\<delta(s,sigma)\>, as defined shortly
+- to use the API, the idea is to define a function f that consumes an "inital state object" s of type (r)\$(s_i) as input and produces a "final state object" of type (r)\$(s_f) as output. Inside of f, initially, the only protocol-related actions that can be performed, are those for which s has a method. When such a method is called on s, an action is performed and a fresh "sucessor state object" sNext is provided. Subsequently, the only protocol-related actions that can be performed, are those for which sNext has a method. When such a method is called on sNext, another action is performed, and another fresh "successor sucessor state object" sNextNext is provided. This goes on until the final state object is provided. To ensure that every state object is used at most once, every state class extended the following trait.
+- [41] is related to trait UseOnce?
+- when a method is called on an instance of class (r)\$(s), but the method does not exit, it means that: (1) state s in the DFA does not have a corresponding transition; (2) hence, the local type for r does not not specify the corresponding actions, (3) hence, the action is not allowed in the protocol. The compiler statically detects this while type-checking and reports an error.
+As sucessor state objects become available only after predecessor state objects are used, and assuming that every state objects is used exactly once, well-typed usage of the API implies protocol compliance. Moreover, as a final state object must have been provided upon termination, and assuming that there are no other sources of non-terminating or execptionl behaviour, well-typed usage of the API also implies deadlock freedom.
+We note that these two additional assumptions cannot be statically enforced using Scala 3's type system (just as many existing tools [citations]): checking the first assumption requires a form of substrctural typing, while checking the second assumption is generally undicedable. However, the first assumption can be dynamically monitored using lightweight checks at execution-time.
+### DFA to APIs - Using Type Parameters
+
+# Realisability of Global Models of Interaction
+## Introduction
+- the development of systems of collaborating computing entities which interact by message exchange:
+    - communicating component systems
+    - multi-agent systems (MAS)
+    - collective adaptive systems (CAS)
+    - groupware systems
+    - multi-party sessions
+- those systems are often presented by a set of components whose local behaviour is formally described by labelled transition systems (LTS) or process expressions
+- their interaction behaviour is then captured by (synchronous por asynchronous) parallel composition of the local models.
+- before designing such local models it is, however, safer to first model the interaction behaviour of the components from a global prespective
+    - global (session) types
+    - global choreographies
+    - global languages
+    - message sequence charts
+    - UML interaction diagrams
+- the big question: is a Global Model M inded realisable by a system S = (Mi)i in I of local component models Mi.
+- possible solutions are investigated for [...] global session types, in various papers [citations] by imposing syntactic restrictions on global types
+### From Requirements to Realisations
+
+# Synchronous Multiparty Session Types

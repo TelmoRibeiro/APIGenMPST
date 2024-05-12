@@ -1,3 +1,4 @@
+/*
 package mpst.main
 
 import mpst.operational_semantic.Network.*
@@ -94,3 +95,4 @@ object Main:
     networkMSTraverse(locals,Multiset(),Nil)(using localsEnv)
   end main
 end Main
+*/
